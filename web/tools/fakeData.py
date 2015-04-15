@@ -22,7 +22,7 @@ def main():
             conn.request("POST", "/update", params, headers)
             response = conn.getresponse()
             print(response.status, response.reason)
-            data = response.read()
+            #data = response.read()
             conn.close()
             time.sleep(15)
 

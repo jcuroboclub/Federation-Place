@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Shopping Mall Messing</title>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+</head>
+
+<body>
+<iframe width="640" height="300" style="border: 1px solid #cccccc;" src="https://www.thingspeak.com/channels/33970/charts/2?
+  height=300&width=640&results=30&title=Sensor%201%20(deg%20C)
+  &dynamic=true&results=30">
+</iframe>
+<div id="map"></div>
+</body>
+<script type="text/javascript">
+    var width = 600,
+            height = 600;
+
+    var flatsvg = d3.select("#map").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+    var isosvg = d3.select("#map").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+    var xScale = d3.scale.linear()
+            .domain([-2, 2])
+            .range([0, width]);
+
+    var yScale = d3.scale.linear()
+            .domain([-2, 2])
+            .range([height, 0]);
+
+    var flatpavement = d3.svg.line()
+            .interpolate("linear")
+            .x(function(d) {
+                console.log(d[1]);
+                return xScale(d[0]);
+            })
+            .y(function(d) {
+                return yScale(d[1]);
+            })
+
+    var isopavement = d3.svg.line()
+            .interpolate("linear")
+            .x(function(d) {
+                console.log(d[1]);
+                return xScale(0.5*d[0]-0.5*d[1]);
+            })
+            .y(function(d) {
+                return yScale(0.5*(0.5*d[0]+0.5*d[1]));
+            })
+
+    d3.json("floor0.json", function(error, jsonData) {
+        var color1 = d3.scale.category10();
+
+        flatsvg.selectAll("path")
+                .data(jsonData.features)
+                .enter()
+                .append("path")
+                .attr("d", function(d, i) {
+                    return flatpavement(d.geometry.coordinates[0]);
+                })
+                .attr("text", function(d, i) {
+                    return "js";
+                })
+                .attr("fill", function(d, i) {
+                    return color1(i);
+                });
+
+        isosvg.selectAll("path")
+                .data(jsonData.features)
+                .enter()
+                .append("path")
+                .attr("d", function(d, i) {
+                    return isopavement(d.geometry.coordinates[0]);
+                })
+                .attr("text", function(d, i) {
+                    return "js";
+                })
+                .attr("fill", function(d, i) {
+                    return color1(i);
+                });
+
+
+    });
+</script>
+
+</html>
