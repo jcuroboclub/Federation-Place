@@ -4,7 +4,28 @@
 <head>
     <meta charset="utf-8">
     <title>Shopping Mall Messing</title>
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js"></script>
+    <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.7.0/nv.d3.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.7.0/nv.d3.js"></script>
+    <style>
+        text {
+            font: 12px sans-serif;
+        }
+        svg {
+            display: block;
+        }
+        html, body, #nvd3, svg {
+            margin: 0px;
+            padding: 0px;
+            height: 100%;
+            width: 100%;
+        }
+        .dashed {
+            stroke-dasharray: 5,5;
+        }
+    </style>
 </head>
 
 <body>
@@ -12,8 +33,86 @@
   height=300&width=640&results=30&title=Sensor%201%20(deg%20C)
   &dynamic=true&results=30">
 </iframe>
+<div id="nvd3"><svg></svg></div>
 <div id="map"></div>
 </body>
+<script type="text/javascript">
+    // pull from thingspeak: view-source:http://community.thingspeak.com/jquery/Parse_ThingSpeak_Last_Entry_with_jQuery.html
+    // real-time nvd3: http://www.pubnub.com/blog/creating-realtime-updating-data-visualizations-with-nvd3/
+
+    var channelid = 33970,
+            spineData = [],
+            THINGSPEAK_FIELDS = _.map(_.range(1,9),function(x) {return 'field'+x});
+
+    // converts date format from JSON
+    function getChartDate(d) {
+        return d3.time.format.utc("%Y-%m-%dT%H:%M:%SZ").parse(d);
+    }
+    // Date formatting
+    function formatHours(d) {
+        return d3.time.format('%H:%M')(new Date(d));
+    }
+
+    function lineChart() {
+        var chart = nv.models.lineWithFocusChart()
+                        //.useInteractiveGuideline(true)
+                ;
+
+        chart.xAxis
+                .axisLabel('Time')
+                .tickFormat(formatHours);
+        chart.x2Axis
+                .tickFormat(formatHours);
+
+        chart.yAxis
+                .axisLabel('Temp (C)')
+                .tickFormat(d3.format('.1f'));
+        chart.yAxis
+                .tickFormat(d3.format('.1f'));
+        //chart.useInteractiveGuideline(true);
+        nv.utils.windowResize(chart.update);
+        return chart;
+    }
+
+    function loadGraph(chart, data) {
+        d3.select('#nvd3 svg')
+                .datum(data)
+                .call(chart)
+        ;
+
+        return chart;
+    }
+
+    var spineChart = lineChart();
+
+    $(document).ready(function() {
+
+        updatePlot();
+
+        // check for new updates
+        setInterval('updatePlot()',15000);
+
+    });
+
+
+    function updatePlot() {
+        $.getJSON('http://api.thingspeak.com/channels/' + channelid + '/feed.json?', function(data) {
+            // [{"created_at":"YYYY-MM-DDTHH:mm:ssZ","entry_id":X,"field1":"X","field2":"X",...,"field8":"X"}]
+            // to
+            // [{"key": "field1","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]},
+            //  {"key": "field2","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]}, ...
+            //  {"key": "field8","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]}]
+            spineData = _.map(THINGSPEAK_FIELDS, function(f) {
+                        return {"key": data.channel[f], "values": _.map(data.feeds, function(d) {
+                            return {"x": getChartDate(d.created_at), "y": d[f]};
+                        })};
+                    });
+            console.log(spineData);
+            loadGraph(spineChart, spineData);
+            console.log("plot");
+        });
+    }
+</script>
 <script type="text/javascript">
     var width = 600,
             height = 600;
@@ -36,7 +135,6 @@
     var flatpavement = d3.svg.line()
             .interpolate("linear")
             .x(function(d) {
-                console.log(d[1]);
                 return xScale(d[0]);
             })
             .y(function(d) {
@@ -46,7 +144,6 @@
     var isopavement = d3.svg.line()
             .interpolate("linear")
             .x(function(d) {
-                console.log(d[1]);
                 return xScale(0.5*d[0]-0.5*d[1]);
             })
             .y(function(d) {
