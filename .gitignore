@@ -1,5 +1,7 @@
 ## Ashley
 .idea/
+web/site/node_modules/
+web/site/build/
 
 ## Default Python gitignore
 # Byte-compiled / optimized / DLL files
