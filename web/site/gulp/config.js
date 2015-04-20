@@ -65,5 +65,8 @@ module.exports = {
     "nvd3css": {
         src: './node_modules/nvd3/build/nv.d3.css',
         dest: src + "/sass/"
+    },
+    "lint": {
+        src: src + '/javascript/**/*.coffee'
     }
 };

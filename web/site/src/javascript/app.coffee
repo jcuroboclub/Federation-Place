@@ -1,25 +1,20 @@
+# Created by AshGillman, 19/5/14
+
 _ = require 'underscore'
 $ = require 'jquery'
 d3 = require 'd3'
 require 'nvd3/build/nv.d3.js'
+ts = require './thingspeak'
 
 channelid = 33970
 spineData = []
-THINGSPEAK_FIELDS = _.map(_.range(1, 9), (x) ->
-  'field' + x
-)
 
-# converts date format from JSON
-getChartDate = (d) ->
-  d3.time.format.utc('%Y-%m-%dT%H:%M:%SZ').parse d
 
 # Date formatting
 formatHours = (d) ->
   d3.time.format('%H:%M') new Date(d)
 
 lineChart = ->
-  console.log(nv)
-  console.log(nv.models)
   chart = nv.models.lineWithFocusChart()
   #.useInteractiveGuideline(true)
   chart.xAxis.axisLabel('Time').tickFormat formatHours
@@ -35,23 +30,9 @@ loadGraph = (chart, data) ->
   chart
 
 updatePlot = (chart) ->
-  $.getJSON 'http://api.thingspeak.com/channels/' + channelid + '/feed.json?', (data) ->
-    # [{"created_at":"YYYY-MM-DDTHH:mm:ssZ","entry_id":X,"field1":"X","field2":"X",...,"field8":"X"}]
-    # to
-    # [{"key": "field1","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]},
-    #  {"key": "field2","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]}, ...
-    #  {"key": "field8","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]}]
-    spineData = _.map(THINGSPEAK_FIELDS, (f) ->
-      {
-      'key': data.channel[f]
-      'values': _.map(data.feeds, (d) ->
-        {
-        'x': getChartDate(d.created_at)
-        'y': d[f]
-        }
-      )
-      }
-    )
+  $.getJSON 'http://api.thingspeak.com/channels/' +
+      channelid + '/feed.json?', (data) ->
+    spineData = ts.toNvLine(data)
     loadGraph chart, spineData
     console.log 'plot'
     return
