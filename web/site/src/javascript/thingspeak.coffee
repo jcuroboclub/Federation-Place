@@ -2,7 +2,9 @@
 $ = require 'jquery'
 d3 = require 'd3'
 
-THINGSPEAK_FIELDS = do ((n) -> ('field' + n) for n in [1...9])
+TS_FIELDS = do ((n) -> ('field' + n) for n in [1...9])
+TS_URL = "http://api.thingspeak.com/"
+exports.UPDATE_SECS = 15
 
 parseDateStr = d3.time.format.utc('%Y-%m-%dT%H:%M:%SZ').parse
 
@@ -19,10 +21,11 @@ parseDateStr = d3.time.format.utc('%Y-%m-%dT%H:%M:%SZ').parse
 #  ...,
 #  {"key": "field8","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]}]
 exports.toNv = (tsData) ->
-  for f in THINGSPEAK_FIELDS
+  for f in TS_FIELDS
     key: (tsData.channel[f])
-    values: (x: parseDateStr(d.created_at), y: d[f] for d in tsData.feeds)
+    values:
+      (x: parseDateStr(d.created_at), y: parseFloat(d[f]) for d in tsData.feeds)
 
 # Load ThingSpeak stream
-exports.loadFeed = (channel, callback) ->
-  $.getJSON("http://api.thingspeak.com/channels/#{channel}/feed.json", callback)
+exports.loadFeed = (channel, callback, n=100) ->
+  $.getJSON TS_URL + "channels/#{channel}/feed.json?results=#{n}", callback

@@ -1,9 +1,8 @@
 # Created by AshGillman, 19/5/14
 
-$ = require 'jquery'
 d3 = require 'd3'
 require 'nvd3/build/nv.d3.js'
-ts = require './thingspeak'
+ts = require './ThingSpeak'
 
 channelid = 33970
 spineData = []

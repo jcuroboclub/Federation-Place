@@ -2,6 +2,7 @@
 .idea/
 web/site/node_modules/
 web/site/build/
+*.DS_Store
 
 ## Default Python gitignore
 # Byte-compiled / optimized / DLL files

@@ -68,5 +68,8 @@ module.exports = {
     },
     "lint": {
         src: src + '/javascript/**/*.coffee'
+    },
+    "karma": {
+        src: src + '/javascript/__test__/**/*.coffee'
     }
 };
