@@ -18,7 +18,7 @@ lineChart = ->
   chart.xAxis.axisLabel('Time').tickFormat(formatHours)
   chart.x2Axis.tickFormat formatHours
   chart.yAxis.axisLabel('Temp (C)').tickFormat d3.format('.1f')
-  chart.yAxis.tickFormat d3.format('.1f')
+  chart.y2Axis.tickFormat d3.format('.1f')
   #chart.useInteractiveGuideline(true);
   nv.utils.windowResize(chart.update)
   return chart

@@ -1,6 +1,6 @@
 # Created by AshGillman 23/4/15
 
-exports.Datamanager = class DataManager
+exports.DataManager = class DataManager
   constructor: (@source, @interval) ->
     @data = [key: "", values: [x: 0, y: new Date]] # nvd3 format
     @_subscribers = []
