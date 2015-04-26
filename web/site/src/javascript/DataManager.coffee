@@ -1,29 +1,39 @@
 # Created by AshGillman 23/4/15
 
 exports.DataManager = class DataManager
-  constructor: (@source, @interval) ->
+  # source: callable, returns data in nvd3 format
+  constructor: ->
     @data = [key: "", values: [x: 0, y: new Date]] # nvd3 format
     @_subscribers = []
+    @source = (callback) -> callback []
+    @interval = 15000
 
   # addSubscribers. Subscriber are expected to be callables with single data
   # argument
   addSubscriber: (subscriber) ->
     @_subscribers.push(subscriber)
+    return @
+
+  setTime: (@interval) ->
+    return @
+
+  setSource: (@source) ->
+    return @
 
   _notifyAll: ->
     subscriber(@data) for subscriber in @_subscribers
 
-  _update: =>
-    newdata = do @source
+  update: (newdata) =>
     [..., newlast] = newdata[0].values
     [..., oldlast] = @data[0].values
-    @data = newdata if newlast isnt oldlast
-    do @_notifyAll
+    if newlast isnt oldlast
+      @data = newdata
+      do @_notifyAll
 
-  # source: callable, returns data in nvd3 format
   begin: ->
-    #console.log(@data)
-    @pid = setInterval @_update, @interval
+    #@source @update
+    console.log "bang"
+    @pid = setInterval (=> @source @update), @interval
 
   end: ->
     clearInterval(@pid)
