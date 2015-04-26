@@ -22,5 +22,4 @@ describe 'PlotManager', ->
     # TODO
   it 'updates the plot', ->
     @pm.update("dataType", fakeData(1))
-    console.log fakePlot.data
     fakePlot.data.should.deep.equal fakeData(1)

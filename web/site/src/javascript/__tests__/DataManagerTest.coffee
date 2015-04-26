@@ -5,7 +5,7 @@ DM = require '../DataManager'
 fakeData = (n) -> [key: "fake", values: [y: n, x: new Date Date.UTC(n)]]
 
 describe 'DataManager', ->
-  @intendedcount = 10
+  @intendedcount = 5
   @count = 0
   @interval = 10
   @first=0
@@ -13,7 +13,7 @@ describe 'DataManager', ->
     @count += 1
     @first = do Date.now if @count <= 1
     callback(fakeData(@count))
-    if @count >= 10
+    if @count >= @intendedcount
       @diff = do Date.now - @first
       do done
       do @dm.end
@@ -32,7 +32,7 @@ describe 'DataManager', ->
 
   it 'updates at a regular interval', =>
     @diff.should.be.above @interval * @count * 0.8
-    @diff.should.be.below @interval * @count * 1.2 + 100
+    @diff.should.be.below @interval * @count * 1.2 + 150
   it 'updates data from the source function', =>
     @dm.data[0].key.should.equal fakeData(0)[0].key
     @rxdata[0].key.should.equal fakeData(0)[0].key

@@ -36,6 +36,7 @@
     "browser-sync": "~2.2.2",
     "browserify": "^9.0.3",
     "browserify-shim": "^3.8.2",
+    "chai": "^2.2.0",
     "coffeeify": "~1.0.0",
     "gulp": "^3.8.11",
     "gulp-autoprefixer": "^2.1.0",
