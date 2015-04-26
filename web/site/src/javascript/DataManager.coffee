@@ -32,7 +32,6 @@ exports.DataManager = class DataManager
 
   begin: ->
     #@source @update
-    console.log "bang"
     @pid = setInterval (=> @source @update), @interval
 
   end: ->

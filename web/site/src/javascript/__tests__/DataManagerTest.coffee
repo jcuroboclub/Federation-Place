@@ -10,7 +10,6 @@ describe 'DataManager', ->
   @interval = 10
   @first=0
   @fakeSource = (done) => (callback) =>
-    console.log("bing")
     @count += 1
     @first = do Date.now if @count <= 1
     callback(fakeData(@count))
@@ -29,7 +28,6 @@ describe 'DataManager', ->
     @dm.setSource @fakeSource(done)
       .setTime @interval
       .addSubscriber @fakeSubscriber
-    console.log(@dm)
     do @dm.begin
 
   it 'updates at a regular interval', =>
@@ -43,5 +41,4 @@ describe 'DataManager', ->
 
   describe 'end()', =>
     it 'stops the updating', =>
-      console.log window
       @count.should.equal @intendedcount

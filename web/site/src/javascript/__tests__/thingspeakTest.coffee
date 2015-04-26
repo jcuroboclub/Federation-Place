@@ -1,3 +1,5 @@
+# Created by AshGillman
+
 ts = require '../ThingSpeak'
 
 # This is the format of data that we get from ThingSpeak
