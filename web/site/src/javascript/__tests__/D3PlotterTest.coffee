@@ -19,4 +19,8 @@ describe 'D3Plotter functions', ->
   describe 'appendAnchor', ->
     it 'should append a p #id element with an svg element', ->
       p = D3P.appendAnchor 'body', 'id'
-      p.should.equal $('body p')
+      p[0][0].should.equal $('body p')[0]
+      p[0][0].should.equal $('#id')[0]
+      should.exist $('#id svg')[0]
+      should.not.exist $('#ix svg')[0]
+      should.not.exist $('#id p')[0]
