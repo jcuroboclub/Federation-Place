@@ -16,4 +16,4 @@ exports.PlotManager = class PlotManager
 
   update: (type, data) ->
     @main.plot(type, data) if type of @main.plotfuncs
-    @focus.plot(type, data) if type of @focus.plotfuncs
+    @focus?.plot(type, data) if type of @focus.plotfuncs

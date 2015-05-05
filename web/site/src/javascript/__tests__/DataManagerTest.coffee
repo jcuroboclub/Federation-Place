@@ -42,3 +42,7 @@ describe 'DataManager', ->
   describe 'end()', =>
     it 'stops the updating', =>
       @count.should.equal @intendedcount
+
+  describe 'update()', =>
+    it "Doesn't crash on bad data", =>
+      @dm.update('bad data')

@@ -24,6 +24,9 @@ exports.DataManager = class DataManager
     subscriber(@data) for subscriber in @_subscribers
 
   update: (newdata) =>
+    if not newdata[0] or not newdata[0].values
+      console.log "Can't interpret data", newdata
+      return
     [..., newlast] = newdata[0].values
     [..., oldlast] = @data[0].values
     if newlast isnt oldlast
@@ -31,7 +34,7 @@ exports.DataManager = class DataManager
       do @_notifyAll
 
   begin: ->
-    #@source @update
+    @source @update
     @pid = setInterval (=> @source @update), @interval
 
   end: ->
