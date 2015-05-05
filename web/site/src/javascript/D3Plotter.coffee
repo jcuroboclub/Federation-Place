@@ -8,5 +8,5 @@ exports.redraw = (elem, chart, data) ->
 
 exports.appendAnchor = (to, id) ->
   p = d3.select(to).append("p").attr("id", id)
-  p.append("svg")
-  return p
+  svg = p.append("svg")
+  return svg

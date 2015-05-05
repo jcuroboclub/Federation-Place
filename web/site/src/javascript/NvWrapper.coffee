@@ -16,9 +16,10 @@ exports.LineChart = class LineChart
     nv.utils.windowResize(chart.update)
     return chart
 
-  updateChart: (data) ->
+  updateChart: (data) =>
     field1 = data[0]
     last = field1.values[field1.values.length-1]
     if last isnt @oldlast # if updated
       @oldlast = last
+      console.log @target
       d3.select(@target).datum(data).call @chart

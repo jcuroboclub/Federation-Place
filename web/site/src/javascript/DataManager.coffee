@@ -8,8 +8,7 @@ exports.DataManager = class DataManager
     @source = (callback) -> callback []
     @interval = 15000
 
-  # addSubscribers. Subscriber are expected to be callables with single data
-  # argument
+  # Subscriber are expected to be callables with single data argument
   addSubscriber: (subscriber) ->
     @_subscribers.push(subscriber)
     return @
@@ -17,6 +16,8 @@ exports.DataManager = class DataManager
   setTime: (@interval) ->
     return @
 
+  # Source is asynchronous, expects one argument: the callback.
+  # Source must call the callback with one argument: the data in nv format.
   setSource: (@source) ->
     return @
 
@@ -25,7 +26,7 @@ exports.DataManager = class DataManager
 
   update: (newdata) =>
     if not newdata[0] or not newdata[0].values
-      console.log "Can't interpret data", newdata
+      console.log "Can't interpret data - did you convert to NV?", newdata
       return
     [..., newlast] = newdata[0].values
     [..., oldlast] = @data[0].values
