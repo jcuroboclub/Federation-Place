@@ -6,7 +6,7 @@ DataMgr = require('./DataManager').DataManager
 
 channelid = 33970
 anchorId = 'vis'
-mainAnchor = D3P.appendAnchor('body', anchorId)
+#mainAnchor = D3P.appendAnchor('body', anchorId)
 
 addDebug = (fn) -> (d...) ->
   console.log fn, d
