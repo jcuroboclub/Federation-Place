@@ -5,7 +5,8 @@ LineChart = require('./NvWrapper').LineChart
 DataMgr = require('./DataManager').DataManager
 
 channelid = 33970
-mainAnchor = D3P.appendAnchor('body', 'vis')
+anchorId = 'vis'
+mainAnchor = D3P.appendAnchor('body', anchorId)
 
 addDebug = (fn) -> (d...) ->
   console.log fn, d
@@ -13,7 +14,7 @@ addDebug = (fn) -> (d...) ->
 
 App =
   start: ->
-    mainChart = new LineChart(mainAnchor)
+    mainChart = new LineChart('#' + anchorId + ' svg')
     dataMgr = new DataMgr
     listener = (d) ->
       mainChart.updateChart d
