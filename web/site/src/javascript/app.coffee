@@ -1,49 +1,28 @@
 # Created by AshGillman, 19/5/14
-
-d3 = require 'd3'
-require 'nvd3/build/nv.d3.js'
-ts = require './ThingSpeak'
+TS = require './ThingSpeak'
+D3P = require './D3Plotter.coffee'
+LineChart = require('./NvWrapper').LineChart
+DataMgr = require('./DataManager').DataManager
 
 channelid = 33970
-spineData = []
+anchorId = 'vis'
+#mainAnchor = D3P.appendAnchor('body', anchorId)
 
-
-# Date formatting
-formatHours = (d) ->
-  d3.time.format('%H:%M') new Date(d)
-
-lineChart = ->
-  chart = nv.models.lineWithFocusChart()
-  #.useInteractiveGuideline(true)
-  chart.xAxis.axisLabel('Time').tickFormat(formatHours)
-  chart.x2Axis.tickFormat formatHours
-  chart.yAxis.axisLabel('Temp (C)').tickFormat d3.format('.1f')
-  chart.yAxis.tickFormat d3.format('.1f')
-  #chart.useInteractiveGuideline(true);
-  nv.utils.windowResize(chart.update)
-  return chart
-
-loadGraph = (chart, data) ->
-  d3.select('#nvd3 svg').datum(data).call(chart)
-  return chart
-
-updatePlot = (chart) ->
-  ts.loadFeed channelid, (data) ->
-    spineData = ts.toNv(data)
-    console.log(spineData)
-    loadGraph(chart, spineData)
-
-#$(document).ready ->
-#  updatePlot()
-#  # check for new updates
-#  setInterval 'updatePlot()', 15000
-#  return
+addDebug = (fn) -> (d...) ->
+  console.log fn, d
+  fn d...
 
 App =
   start: ->
-    console.log "app started!"
-    spineChart = lineChart()
-    updatePlot(spineChart)
-    setInterval((do (spineChart) -> -> updatePlot(spineChart)), 15000)
+    mainChart = new LineChart('#' + anchorId + ' svg')
+    dataMgr = new DataMgr
+    listener = (d) ->
+      mainChart.updateChart d
+    dataMgr.setSource (callback) ->
+        TS.loadFeed channelid, (d) ->
+          console.log 'a', d # TODO rm
+          callback(TS.toNv(d))
+      .addSubscriber mainChart.updateChart
+      .begin()
 
 module.exports = App

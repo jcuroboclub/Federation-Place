@@ -3,7 +3,7 @@ $ = require 'jquery'
 d3 = require 'd3'
 
 TS_FIELDS = do ((n) -> ('field' + n) for n in [1...9])
-TS_URL = "http://api.thingspeak.com/"
+TS_URL = "https://api.thingspeak.com/"
 exports.UPDATE_SECS = 15
 
 parseDateStr = d3.time.format.utc('%Y-%m-%dT%H:%M:%SZ').parse

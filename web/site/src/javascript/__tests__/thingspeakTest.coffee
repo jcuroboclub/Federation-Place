@@ -1,5 +1,8 @@
+# Created by AshGillman
+
 ts = require '../ThingSpeak'
 
+# This is the format of data that we get from ThingSpeak
 tsData =
   channel:
     id:33970
@@ -41,6 +44,7 @@ tsData =
       field8:"28.5355339059"
     }]
 
+# The data format I will likely be using is that based on the NVD3 library.
 describe 'thingspeak toNv', ->
   it 'should be in the correct format', ->
     ts.toNv(tsData)[0].key.should.be.a 'string'
@@ -55,8 +59,9 @@ describe 'thingspeak toNv', ->
       (new Date Date.UTC(2015, 3, 22, 23, 1, 25, 0)).toString()
     ts.toNv(tsData)[0].values[0].y.should.equal 28.5355339059
 
+# ThingSpeak has a simple http API to request data in JSON format.
 describe 'thingspeak loadFeed', ->
-  before 'Load Channel 3 thingspeak data', (done) =>
+  before 'Load the Channel 3 thingspeak data', (done) =>
     ts.loadFeed 3, (data) =>
       @channel3Data = data
       do done
