@@ -4,7 +4,7 @@ D3P = require './D3Plotter.coffee'
 LineChart = require('./NvWrapper').LineChart
 DataMgr = require('./DataManager').DataManager
 
-channelid = 33970
+channelid = 20466 # 33970
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
 
@@ -16,11 +16,8 @@ App =
   start: ->
     mainChart = new LineChart('#' + anchorId + ' svg')
     dataMgr = new DataMgr
-    listener = (d) ->
-      mainChart.updateChart d
     dataMgr.setSource (callback) ->
         TS.loadFeed channelid, (d) ->
-          console.log 'a', d # TODO rm
           callback(TS.toNv(d))
       .addSubscriber mainChart.updateChart
       .begin()

@@ -21,7 +21,7 @@ parseDateStr = d3.time.format.utc('%Y-%m-%dT%H:%M:%SZ').parse
 #  ...,
 #  {"key": "field8","values": [{"x": "YYYY-MM-DDTHH:mm:ssZ", "y": X}, ... ]}]
 exports.toNv = (tsData) ->
-  for f in TS_FIELDS
+  for f in TS_FIELDS when tsData.channel[f]?
     key: (tsData.channel[f])
     values:
       (x: parseDateStr(d.created_at), y: parseFloat(d[f]) for d in tsData.feeds)

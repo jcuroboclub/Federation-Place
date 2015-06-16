@@ -24,6 +24,7 @@ exports.DataManager = class DataManager
   _notifyAll: ->
     subscriber(@data) for subscriber in @_subscribers
 
+  # Callback on data update: notifies subscribers if data is new.
   update: (newdata) =>
     if not newdata[0] or not newdata[0].values
       console.log "Can't interpret data - did you convert to NV?", newdata
