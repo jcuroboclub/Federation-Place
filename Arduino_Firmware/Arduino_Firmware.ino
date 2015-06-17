@@ -32,7 +32,7 @@ Hardware Connections for RGB LED (common cathode)
 #define SENSOR_ID 1
 
 // Time delay between sensor readings (in milliseconds)
-#define SENSOR_PERIOD 30000
+#define SENSOR_PERIOD 5000
 
 //DEFINE LIBRARIES
 #include <SoftwareSerial.h>
@@ -214,9 +214,12 @@ void checkRadio()
   // The coordinator will send us periodic packets to indicate that we're still in radio contact.
   if (XBee.available()) {
     char msg = XBee.read();
+    Serial.print("Read from XBee: ");
+    Serial.println(msg);
     if (msg == '1') {
       // Character '1' indicates an OK status from the coordinator.
       last_contact = millis();
+      nodeStatus = OK;
     }
   }
 
