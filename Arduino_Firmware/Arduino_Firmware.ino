@@ -38,14 +38,12 @@ Hardware Connections for RGB LED (common cathode)
 #include <SoftwareSerial.h>
 #include <Wire.h> // The I2C library
 #include "SparkFunHTU21D.h" // Sensor's library
-#include "ButtonEvent.h"
 
 //Global variables
 HTU21D The_sensor;
-float humid;
-float temp;
 
 //Pins
+int ButtonPins[] = {15, 14, 16}; // Happy, Indifferent, Sad
 int LEDpins[] = {A0, A1, A2}; // Green, Yellow, Red
 int PWM[] = {5, 9, 6}; // Red, Green, Blue
 SoftwareSerial XBee(8, 7); // RX, TX
@@ -53,9 +51,18 @@ SoftwareSerial XBee(8, 7); // RX, TX
 // Keep track of the status of the system using this enumeration
 enum NodeStatus {
   StartingUp, // before first contact
-  OK, // working normally
+  NodeOK, // working normally
   LossOfRadioContact // Lost contact with the coordinator
 } nodeStatus;
+
+// Keep track of the button status using this state machine
+enum ButtonStatus {
+  // These numbers match up with the corresponding indices in LEDpins and ButtonPins
+  HappyDown = 0,
+  IndifferentDown = 1,
+  SadDown = 2,
+  NoButtons = 3
+} buttonStatus;
 
 // Time of last radio contact
 unsigned long last_contact = 0; // time from millis() of last contact with the coordinator
@@ -64,50 +71,22 @@ void setup() {
   // General Setup
   nodeStatus = StartingUp;
   
-  // Turn on all the LEDs for testing
-  ledRGB(255,255,255);
-  digitalWrite(LEDpins[0], 1);
-  digitalWrite(LEDpins[1], 1);
-  digitalWrite(LEDpins[2], 1);
-
-  //Configuring the Button Events
-  ButtonEvent.addButton(14, //button pin (SAD)
-                        onDown,  //onDown event function
-                        onUp,   //onUp event function
-                        onHold,//onHold event function
-                        1000,  //hold time in milliseconds
-                        onDouble, //onDouble event function
-                        200); //double time interval
-
-  ButtonEvent.addButton(15, //button pin (INDIFFERENT)
-                        onDown,  //onDown event function
-                        onUp,   //onUp event function
-                        onHold,//onHold event function
-                        1000,  //hold time in milliseconds
-                        onDouble, //onDouble event function
-                        200); //double time interval
-
-  ButtonEvent.addButton(16, //button pin (Happy)
-                        onDown,  //onDown event function
-                        onUp,   //onUp event function
-                        onHold,//onHold event function
-                        1000,  //hold time in milliseconds
-                        onDouble, //onDouble event function
-                        200); //double time interval
-
-  // Initialising the pin for both normal LED and RGB LED
-  for (int LED_no = 0; LED_no < 3; LED_no++)
+  // Initialise the pins and turn on all the LEDs for testing
+  for (int i = 0; i < 3; i++)
   {
-    pinMode(LEDpins[LED_no], OUTPUT);
-    pinMode(PWM[LED_no], OUTPUT);
-  }
+    pinMode(LEDpins[i], OUTPUT);
+    digitalWrite(LEDpins[i], 1);
+    
+    pinMode(PWM[i], OUTPUT);
+    digitalWrite(PWM[i], 1);
+  }  
 
   // Initialise the serial ports (for both Xbees and the USB serial)
   XBee.begin(9600); // Initialise the XBee SoftwareSerial
   Serial.begin(9600);
   
   // Wait a bit, and then turn off the LEDs
-  delay(750);
+  delay(1000);
   ledRGB(0, 0, 0);
   digitalWrite(LEDpins[0], 0);
   digitalWrite(LEDpins[1], 0);
@@ -115,58 +94,35 @@ void setup() {
 }
 
 void loop() {
-  // Obtain the sensor's data
+  // Is it time to obtain new sensor data?
   static unsigned long last_sensor_read = 0;
   unsigned long current_time = millis();
-  if (current_time < last_sensor_read) {
-    // Every ~ 50 days the time wraps around. Just reset the clock.
-    last_sensor_read = 0;
-  }
   if ((current_time - last_sensor_read) >= SENSOR_PERIOD) {
+    // Unsigned arithmetic automatically accounts for clock rollover
     readSensors();
     last_sensor_read = current_time;
   }
   
   // Check that we're still in radio communication with the coordinator
   checkRadio();
- 
-  // Events for the buttons
-  ButtonEvent.loop();
   
-  // Update the status LED
-  switch (nodeStatus) {
-    case StartingUp:
-      // Fast blinking green led
-      if ((millis() / 100) % 2 == 0) {
-        ledRGB(0, 128, 0);
-      } else {
-        ledRGB(0, 0, 0);
-      }
-      break;
-    case OK:
-      // Solid green LED
-      ledRGB(0, 40, 0);
-      break;
-    case LossOfRadioContact:
-      // Blinking red LED
-      if ((millis() / 200) % 2 == 0) {
-        ledRGB(255, 0, 0);
-      } else {
-        ledRGB(0, 0, 0);
-      } 
-      break;
-  }
+  // Handle the buttons
+  readButtons();
   
+  // Update the LEDs
+  updateStatusLED();
+  updateButtonLEDs();
+   
 #if DEBUG
   static unsigned long last_print = 0;
   if ((millis() - last_print) > 1000) {
     last_print = millis();
     switch (nodeStatus) {
       case StartingUp:
-        Serial.println("Starting up");
+        Serial.println("Status: Starting up");
         break;
-      case OK:
-        Serial.println("Status OK");
+      case NodeOK:
+        //Serial.println("Status OK");
         break;
       case LossOfRadioContact:
         Serial.println("Loss of radio contact");
@@ -182,8 +138,8 @@ void loop() {
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 void readSensors() {
   // Read the temp and humidity from the sensors
-  humid = The_sensor.readHumidity();
-  temp = The_sensor.readTemperature();
+  float humid = The_sensor.readHumidity();
+  float temp = The_sensor.readTemperature();
   
   // Output in CSV format
   // SensorID,temp,humidity
@@ -194,15 +150,71 @@ void readSensors() {
   XBee.print(humid);
   XBee.println("");
 
-  if (DEBUG) {
-    Serial.print("Sensor ");
-    Serial.print(SENSOR_ID);
-    Serial.print(" Temperature:");
-    Serial.print(temp );
-    Serial.print("C ");
-    Serial.print(" Humidity:");
-    Serial.print(humid );
-    Serial.println("%");
+#if DEBUG
+  Serial.print("Sensor ");
+  Serial.print(SENSOR_ID);
+  Serial.print(" Temperature:");
+  Serial.print(temp );
+  Serial.print("C ");
+  Serial.print(" Humidity:");
+  Serial.print(humid );
+  Serial.println("%");
+#endif
+}
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+// BUTTONS
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+void readButtons()
+{
+  static unsigned long last_change = 0;
+  unsigned long current_time = millis();
+  if ((current_time - last_change) < 1000) {
+    // It has been too soon since the last change. Disallow this.
+    return;
+  }
+    
+  if (buttonStatus == NoButtons) {
+    // Allowable transitions: to any button down.
+    
+    // Loop through all buttons:
+    for (int i = 0; i < (int)NoButtons; i++) {
+      // Read the button state
+      if (digitalRead(ButtonPins[i])) {
+        // A comfort button has been pressed.
+        
+        last_change = millis();
+        buttonStatus = (ButtonStatus)i; // Update the state machine
+        
+        // Send this message over the radio in the format:
+        //     SensorID,comfort_code
+        // The comfort_code is:
+        //      'A' = happy
+        //      'B' = indifferent
+        //      'C' = sad
+        XBee.print(SENSOR_ID);
+        XBee.print(",");
+        XBee.println((char)(buttonStatus + 'A'));
+        
+#if DEBUG
+        Serial.print("Sensor ");
+        Serial.print(SENSOR_ID);
+        Serial.print(" Comfort: ");
+        Serial.println((char)(buttonStatus + 'A'));
+#endif
+        
+        break; // Only allow one button to be pressed at once
+      }
+    }
+  } else {
+    // A button is currently pressed.
+    
+    // Allowable transitions: to button released.
+    if (digitalRead(ButtonPins[buttonStatus]) == 0) {
+      // The button has been released.
+      buttonStatus = NoButtons;
+      last_change = millis();
+    }
   }
 }
 
@@ -219,74 +231,55 @@ void checkRadio()
     if (msg == '1') {
       // Character '1' indicates an OK status from the coordinator.
       last_contact = millis();
-      nodeStatus = OK;
+      nodeStatus = NodeOK;
     }
   }
 
   // Check how long it has been since last radio contact
   unsigned long current_time = millis();
-  if (current_time < last_contact) {
-    // Every ~ 50 days the time wraps around. Just reset the clock.
-    last_contact = 0;
-  } else if ((current_time - last_contact) > 10000) {
-    // More than 30 seconds have passed since last radio contact
+  if ((current_time - last_contact) > (SENSOR_PERIOD*2 + 2000)) {
+    // Unsigned arithmetic automatically accounts for clock rollover
+    // More than n seconds have passed since last radio contact
     nodeStatus = LossOfRadioContact;
   }
 }
 
-
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-// ON BUTTONS EVENT
+// LEDs
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-void onDown(ButtonInformation* Sender) {
-  Serial.print("Button (pin:");
-  Serial.print(Sender->pin);
-  Serial.println(") down!");
-
-  if (Sender->pin == 14) { // Indifferent
-    digitalWrite(LEDpins[1], HIGH);
-    XBee.println("100" );
-    delay(1000);
-    digitalWrite(LEDpins[1], LOW);
-
-  }
-
-  else if (Sender->pin == 15) { //Happy
-    digitalWrite(LEDpins[0], HIGH);
-    XBee.println("200" );
-    delay(1000);
-    digitalWrite(LEDpins[0], LOW);
-
-  }
-
-  else if (Sender->pin == 16) { //SAD
-    digitalWrite(LEDpins[2], HIGH);
-    XBee.println("300" );
-    delay(1000);
-    digitalWrite(LEDpins[2], LOW);
+void updateStatusLED() 
+{
+  switch (nodeStatus) {
+    case StartingUp:
+      // Fast blinking green led
+      if ((millis() / 100) % 2 == 0) {
+        ledRGB(0, 128, 0);
+      } else {
+        ledRGB(0, 0, 0);
+      }
+      break;
+    case NodeOK:
+      // Solid green LED
+      ledRGB(0, 40, 0);
+      break;
+    case LossOfRadioContact:
+      // Blinking red LED
+      if ((millis() / 200) % 2 == 0) {
+        ledRGB(255, 0, 0);
+      } else {
+        ledRGB(0, 0, 0);
+      } 
+      break;
   }
 }
 
-void onUp(ButtonInformation* Sender) {
+void updateButtonLEDs() 
+{
+  for (int i = 0; i < NoButtons; i++) {
+    digitalWrite(LEDpins[i], buttonStatus == i);
+  }
 }
-
-void onHold(ButtonInformation* Sender) {
-  Serial.print("Button (pin:");
-  Serial.print(Sender->pin);
-  Serial.print(") hold for ");
-  Serial.print(Sender->holdMillis);
-  Serial.println("ms!");
-}
-
-void onDouble(ButtonInformation* Sender) {
-  Serial.print("Button (pin:");
-  Serial.print(Sender->pin);
-  Serial.print(") double click in ");
-  Serial.print(Sender->doubleMillis);
-  Serial.println("ms!");
-}
-
 
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // RGB LED.
@@ -297,4 +290,5 @@ void ledRGB (int red, int green, int blue) {
   analogWrite(PWM[1], green);
   analogWrite(PWM[2], blue);
 }
+
 
