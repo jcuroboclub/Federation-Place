@@ -62,7 +62,7 @@ class DataStore:
         print("Sensor %s:\tComfort=%s" % (sensorID, comfort))
 
         # Upload to Thingspeak
-        return self._upload(sensorID, {'field3': comfort_mapping[comfort]})
+        return self._upload(sensorID, {'field3': self.comfort_mapping[comfort]})
 
     # Private method to upload to the Internet
     def _upload(self, sensorID, params):
