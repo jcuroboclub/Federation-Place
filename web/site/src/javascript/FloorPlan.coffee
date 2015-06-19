@@ -2,7 +2,8 @@
 
 d3 = require 'd3'
 
-colours = ["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02",
+# ColorBrewer defs: http://colorbrewer2.org/
+cb_dark2 = ["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02",
     "#a6761d","#666666"]
 
 bounds = (featureCollection) ->
@@ -15,8 +16,9 @@ bounds = (featureCollection) ->
       xs.push c[0]
       ys.push c[1]
   return [
-    [(Math.min.apply @, xs), Math.min.apply @, ys],
-    [(Math.max.apply @, xs), Math.max.apply @, ys]]
+      [(Math.min xs...), (Math.min ys...)],
+      [(Math.max xs...), (Math.max ys...)]
+    ]
 
 exports.FloorPlan = class FloorPlan
   constructor: (@svg) ->
@@ -60,5 +62,8 @@ exports.FloorPlan = class FloorPlan
         .append "polygon"
         .attr "class", "feature"
         .attr "points", (d) ->
-          ("#{Math.round(scaleX p[0])},#{Math.round(scaleY p[1])}" for p in d.geometry.coordinates[0]).join ' '
-        .style("fill", (d, i) -> colours[i] )
+          points =
+            for p in d.geometry.coordinates[0]
+              "#{Math.round(scaleX p[0])},#{Math.round(scaleY p[1])}"
+          points.join ' '
+        .style("fill", (d, i) -> cb_dark2[i] )
