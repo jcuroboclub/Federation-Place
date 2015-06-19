@@ -43,8 +43,8 @@ exports.FloorPlan = class FloorPlan
         .range [height, 1e-6]
 
     # Change scale of stretched axis to avoid stretching
-    dx = Math.abs((scaleX 1) - (scaleX 0))
-    dy = Math.abs((scaleY 1) - (scaleY 0))
+    dx = Math.abs (scaleX 1) - (scaleX 0)
+    dy = Math.abs (scaleY 1) - (scaleY 0)
     if dx > dy
       scaleX.domain [
           (scaleX.invert 1/2*width - width * dx/dy/2),
@@ -56,7 +56,7 @@ exports.FloorPlan = class FloorPlan
           (scaleY.invert 1/2*height - height * dy/dx/2)
         ]
 
-    @svg.selectAll "polygon"
+    @svg.selectAll ".fp_room"
         .data featureCollection.features
       .enter()
         .append "polygon"
@@ -66,4 +66,5 @@ exports.FloorPlan = class FloorPlan
             for p in d.geometry.coordinates[0]
               "#{Math.round(scaleX p[0])},#{Math.round(scaleY p[1])}"
           points.join ' '
-        .style("fill", (d, i) -> cb_dark2[i] )
+        .style "fill", (d, i) -> cb_dark2[i]
+        .attr 'class', 'fp_room'

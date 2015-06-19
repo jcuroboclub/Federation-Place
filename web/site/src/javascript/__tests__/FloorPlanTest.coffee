@@ -66,23 +66,23 @@ describe 'FloorPlan', ->
     do (svg2.selectAll '*').remove
     floor.features = {}
 
-  it 'can represent a single room as an svg element', ->
+  it 'can represent a single room as an svg element of class room', ->
     expect(do (svg.selectAll '*').empty).to.be.true
 
     plan = new FloorPlan.FloorPlan svg
     floor.features = [square_room]
     plan.plotMap floor
 
-    expect(do (svg.selectAll '*').size).to.equal 1
+    expect(do (svg.selectAll '.fp_room').size).to.equal 1
 
-  it 'can represent a two rooms as two svg elements', ->
-    expect(do (svg.selectAll '*').empty).to.be.true
+  it 'can represent a two rooms as two svg elements of class room', ->
+    expect(do (svg.selectAll '.fp_room').empty).to.be.true
 
     plan = new FloorPlan.FloorPlan svg
     floor.features = [square_room, l_shaped_room]
     plan.plotMap floor
 
-    expect(do (svg.selectAll '*').size).to.equal 2
+    expect(do (svg.selectAll '.fp_room').size).to.equal 2
 
   it 'represents different rooms in different colours', ->
     plan = new FloorPlan.FloorPlan svg
@@ -90,7 +90,7 @@ describe 'FloorPlan', ->
     plan.plotMap floor
 
     fillCols = []
-    (svg.selectAll '*').each ->
+    (svg.selectAll '.fp_room').each ->
       fillCols.push (d3.select @).style 'fill'
 
     fillCols[0].should.not.equal fillCols[1]
@@ -104,8 +104,8 @@ describe 'FloorPlan', ->
     floor2.features = [big_square_room]
     plan2.plotMap floor2
 
-    ((svg.selectAll '*').attr 'points')
-      .should.equal (svg2.selectAll '*').attr 'points'
+    ((svg.selectAll '.fp_room').attr 'points')
+      .should.equal (svg2.selectAll '.fp_room').attr 'points'
 
   it "doesn't stretch figures", ->
     plan = new FloorPlan.FloorPlan svg
@@ -116,5 +116,5 @@ describe 'FloorPlan', ->
     floor2.features = [rectangle_room]
     plan2.plotMap floor2
 
-    ((svg.selectAll '*').attr 'points')
-      .should.not.equal (svg2.selectAll '*').attr 'points'
+    ((svg.selectAll '.fp_room').attr 'points')
+      .should.not.equal (svg2.selectAll '.fp_room').attr 'points'
