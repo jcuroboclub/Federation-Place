@@ -76,13 +76,13 @@ class ThingSpeakStore:
         assert(type(data) == SensorData)
         self.queue.put(data)
         # Add more workers if the queue of unuploaded messages is too long
-        if self.queue.qsize() > 2 and len(self.threads) <= self.max_workers:
+        if self.queue.qsize() > 2 and len(self.threads) < self.max_workers:
             self.threads.append(self._new_worker())
             print("ThingSpeakStore: Added new worker. There are now", len(self.threads), "workers.")
 
     # Worker threads (running in the background)
     comfort_mapping = {'A': 3, 'B': 2, 'C': 1}
-    def worker(self):
+    def _worker(self):
         while True:
             try:
                 # Receive data to upload
@@ -109,7 +109,7 @@ class ThingSpeakStore:
 
     # Private method to create a new worker thread
     def _new_worker(self):
-        t = Thread(target=self.worker)
+        t = Thread(target=self._worker)
         t.daemon = True
         t.start()
         return t
