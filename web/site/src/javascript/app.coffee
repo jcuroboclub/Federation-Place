@@ -59,6 +59,19 @@ sensor1 =
   properties:
     type: 'sensor'
     name: 'Sensor 1'
+    humidities: [30, 20]
+    temperatures: [30, 25]
+
+sensor2 =
+  type: 'Feature'
+  geometry:
+    type: 'Point'
+    coordinates: [1.25, 0.75]
+  properties:
+    type: 'sensor'
+    name: 'Sensor 1'
+    humidities: [30, 40]
+    temperatures: [30, 35]
 
 floor_with_square_room =
   type: "FeatureCollection"
@@ -66,7 +79,7 @@ floor_with_square_room =
 
 floor_with_two_rooms =
   type: "FeatureCollection"
-  features: [square_room, l_shaped_room, sensor1]
+  features: [square_room, l_shaped_room, sensor1, sensor2]
 
 width = 256
 height = 256
