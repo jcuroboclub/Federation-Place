@@ -10,6 +10,7 @@ gulp.task('watch', ['watchify','browserSync'], function() {
     gulp.watch(config.sass.src,   ['sass']);
     gulp.watch(config.images.src, ['images']);
     gulp.watch(config.markup.src, ['markup']);
+    gulp.watch(config.copyData.src, ['copyData']);
     gulp.watch(config.lint.src, ['lint', 'karma']);
     // Watchify will watch and recompile our JS, so no need to gulp.watch it
 });
