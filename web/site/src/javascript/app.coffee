@@ -35,8 +35,9 @@ square_room =
         #[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 0.5], [0.0, 0.0]
         [0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.5, 0.0], [0.0, 0.0]
       ]]
-    properties:
-      name: "Square Room"
+  properties:
+    type: 'room'
+    name: "Square Room"
 
 l_shaped_room =
   type: "Feature"
@@ -46,8 +47,18 @@ l_shaped_room =
         [1.0, 0.0], [2.0, 0.0], [2.0, 3.0], [0.0, 2.0], [0.0, 1.0], [1.0, 1.0],
         [1.0, 0.0]
       ]]
-    properties:
-      name: "Square Room"
+  properties:
+    type: 'room'
+    name: "Square Room"
+
+sensor1 =
+  type: 'Feature'
+  geometry:
+    type: 'Point'
+    coordinates: [0.25, 0.75]
+  properties:
+    type: 'sensor'
+    name: 'Sensor 1'
 
 floor_with_square_room =
   type: "FeatureCollection"
@@ -55,7 +66,7 @@ floor_with_square_room =
 
 floor_with_two_rooms =
   type: "FeatureCollection"
-  features: [square_room, l_shaped_room]
+  features: [square_room, l_shaped_room, sensor1]
 
 width = 256
 height = 256
