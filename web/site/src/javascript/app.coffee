@@ -3,7 +3,8 @@ TS = require './ThingSpeak'
 D3P = require './D3Plotter.coffee'
 LineChart = require('./NvWrapper').LineChart
 DataMgr = require('./DataManager').DataManager
-FloorPlan = require('./FloorPlan')
+FloorPlan = require './FloorPlan'
+$ = require 'jquery'
 
 channelid = 20466 # 33970
 anchorId = 'vis'
@@ -23,55 +24,17 @@ App =
       .addSubscriber mainChart.updateChart
       .begin()
 
+    width = 512
+    height = 512
+    svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+    plan = new FloorPlan.FloorPlan(svg)
+
+    $.getJSON "/data/floor_0.geojson", (data, err) ->
+      if err
+        console.error err
+      plan.plotMap(data)
+
+
 module.exports = App
-
-## Test
-
-square_room =
-  type: "Feature"
-  geometry:
-    type: "Polygon"
-    coordinates: [[
-        #[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 0.5], [0.0, 0.0]
-        [0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.5, 0.0], [0.0, 0.0]
-      ]]
-  properties:
-    type: 'room'
-    name: "Square Room"
-
-l_shaped_room =
-  type: "Feature"
-  geometry:
-    type: "Polygon"
-    coordinates: [[
-        [1.0, 0.0], [2.0, 0.0], [2.0, 3.0], [0.0, 2.0], [0.0, 1.0], [1.0, 1.0],
-        [1.0, 0.0]
-      ]]
-  properties:
-    type: 'room'
-    name: "Square Room"
-
-sensor1 =
-  type: 'Feature'
-  geometry:
-    type: 'Point'
-    coordinates: [0.25, 0.75]
-  properties:
-    type: 'sensor'
-    name: 'Sensor 1'
-
-floor_with_square_room =
-  type: "FeatureCollection"
-  features: [square_room]
-
-floor_with_two_rooms =
-  type: "FeatureCollection"
-  features: [square_room, l_shaped_room, sensor1]
-
-width = 256
-height = 256
-svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-plan = new FloorPlan.FloorPlan(svg)
-plan.plotMap(floor_with_two_rooms)

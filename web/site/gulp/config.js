@@ -62,14 +62,18 @@ module.exports = {
         jsSrc: dest + '/*.js',
         dest: dest
     },
-    "nvd3css": {
+    nvd3css: {
         src: './node_modules/nvd3/build/nv.d3.css',
         dest: src + "/sass/"
     },
-    "lint": {
+    lint: {
         src: src + '/javascript/**/*.coffee'
     },
-    "karma": {
+    karma: {
         src: src + '/javascript/__test__/**/*.coffee'
+    },
+    copyData: {
+        src: src + '/data/**/*',
+        dest: dest + '/data'
     }
 };

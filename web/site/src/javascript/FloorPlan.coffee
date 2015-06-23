@@ -7,6 +7,8 @@ cb_dark2 = ["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e","#e6ab02",
     "#a6761d","#666666"]
 cb_pastel1 = ["#fbb4ae","#b3cde3","#ccebc5","#decbe4","#fed9a6","#ffffcc",
     "#e5d8bd","#fddaec","#f2f2f2"]
+cb_RdYlBu = ["#a50026","#d73027","#f46d43","#fdae61","#fee090","#ffffbf",
+    "#e0f3f8","#abd9e9","#74add1","#4575b4","#313695"]
 
 bounds = (features) ->
   xs = []
@@ -81,15 +83,42 @@ exports.FloorPlan = class FloorPlan
         .style "fill", (d, i) -> cb_pastel1[i]
 
   _plotSensors: (features) ->
-    @svg.selectAll '.fp_sensor'
+    # colour scale, domain is 20C-40C
+    colours = cb_RdYlBu
+    colourMapper = d3.scale.linear()
+      .domain d3.range 20, 40, (40-20) / (colours.length - 1)
+      .range colours
+
+    sensor_sel = @svg.selectAll '.fp_sensor'
         .data features
-      .enter()
+    sensor_node_sel = sensor_sel.enter()
         .append 'g'
         .attr 'class', 'fp_sensor'
-        .append 'circle'
-        .attr 'r', '3'
+    sensor_node_sel.append 'circle'
+        .attr 'class', 'fp_humidity'
+        .attr 'r', '30'
+        .attr 'fill-opacity', '0.5'
+    sensor_node_sel.append 'circle'
+        .attr 'class', 'fp_temperature'
+        .attr 'r', '10'
+    sensor_sel.select('.fp_humidity')
         .attr 'cx', (d) => Math.round @scaleX d.geometry.coordinates[0]
         .attr 'cy', (d) => Math.round @scaleY d.geometry.coordinates[1]
+        .attr 'fill', (d) ->
+          if d.properties?.humidities
+            [..., current] = d.properties.humidities
+            colourMapper current
+          else
+            'black'
+    sensor_sel.select('.fp_temperature')
+        .attr 'cx', (d) => Math.round @scaleX d.geometry.coordinates[0]
+        .attr 'cy', (d) => Math.round @scaleY d.geometry.coordinates[1]
+        .attr 'fill', (d) ->
+          if d.properties?.temperatures
+            [..., current] = d.properties.temperatures
+            colourMapper current
+          else
+            'black'
 
 exports.Sensors = class Sensors
   constructor: (@svg) ->
