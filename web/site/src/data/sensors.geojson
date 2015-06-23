@@ -10,6 +10,7 @@
       "properties": {
         "type": "sensor",
         "name": "Sensor 1",
+        "channel": "42694",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -24,6 +25,7 @@
       "properties": {
         "type": "sensor",
         "name": "Sensor 2",
+        "channel": "42695",
         "temperatures": [],
         "humidities": [],
         "th_times": []

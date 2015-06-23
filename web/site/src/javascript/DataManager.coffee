@@ -22,7 +22,7 @@ exports.DataManager = class DataManager
     return @
 
   _notifyAll: ->
-    subscriber(@data) for subscriber in @_subscribers
+    subscriber @data for subscriber in @_subscribers
 
   # Callback on data update: notifies subscribers if data is new.
   update: (newdata) =>
@@ -40,4 +40,4 @@ exports.DataManager = class DataManager
     @pid = setInterval (=> @source @update), @interval
 
   end: ->
-    clearInterval(@pid)
+    clearInterval @pid

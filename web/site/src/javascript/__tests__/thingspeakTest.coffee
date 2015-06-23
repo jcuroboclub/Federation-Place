@@ -69,6 +69,9 @@ describe 'thingspeak loadFeed', ->
 
   it 'should return something', ->
     (ts.loadFeed 3).should.be.a 'object'
+  it 'should work for channel as a number or a string', ->
+    (ts.loadFeed 3).should.be.a 'object'
+    (ts.loadFeed '3').should.be.a 'object'
   it 'should return in format consistent w/ api docs', =>
     @channel3Data.should.have.property 'channel'
     @channel3Data.feeds.should.be.a 'array'

@@ -1,12 +1,11 @@
 # Created by AshGillman, 19/5/14
-TS = require './ThingSpeak'
+TS = require './thingspeak'
 D3P = require './D3Plotter.coffee'
 LineChart = require('./NvWrapper').LineChart
 DataMgr = require('./DataManager').DataManager
-FloorPlan = require './FloorPlan'
+FloorPlan = require('./FloorPlan').FloorPlan
 $ = require 'jquery'
 
-channelid = 20466 # 33970
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
 
@@ -31,18 +30,41 @@ App =
     svg = d3.select '#vis svg'
         .attr 'width', width
         .attr 'height', height
-    plan = new FloorPlan.FloorPlan svg
+    plan = new FloorPlan svg
 
     map_features =
       type: 'FeatureCollection'
       features: []
 
+    addFeatureCollection = (featureCollection) ->
+      if !featureCollection.features
+        console.error "loaded invalid feature collection"
+
+      # add to map_features, update plot
+      map_features.features.push f for f in featureCollection.features
+      plan.plotMap map_features
+
+      # just a worker to create a closure over the channel
+      updateCallback = (sensor) ->
+        dataMgr = new DataMgr
+        dataMgr
+          .setSource (callback) ->
+            TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d)
+          .addSubscriber (data) ->
+            console.log data
+            sensor.properties.temperatures = (d.y for d in data[0].values)
+            sensor.properties.humidities = (d.y for d in data[1].values)
+            sensor.properties.th_times = (d.x for d in data[0].values)
+            console.log sensor.properties
+            plan.plotMap map_features
+          .begin()
+      # updaters for any sensors
+      for sensor in FloorPlan.filterSensorFeatures featureCollection.features
+        updateCallback sensor
+
     load_map_features = (url) ->
       $.getJSON url, (data) ->
-          if !data.features
-            console.error "loaded invalid data: #{url}"
-          map_features.features.push f for f in data.features
-          plan.plotMap map_features
+          addFeatureCollection data
         .fail ->
           console.error "couldn't load map data: #{url}"
 

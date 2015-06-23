@@ -208,7 +208,7 @@ describe 'FloorPlan', ->
     it 'shows humidity as the colour of a transparent halo', ->
       sensors = new FloorPlan.FloorPlan svg
       sensor = deepClone sensor1
-      sensor.properties.humidities = [20]
+      sensor.properties.humidities = [50]
       sensors.plotMap {
         type: "FeatureCollection"
         features: [unit_square_room, sensor]
@@ -216,16 +216,16 @@ describe 'FloorPlan', ->
 
       (+(svg.selectAll '.fp_sensor .fp_humidity').style 'fill-opacity')
         .should.be.below 1
-      colour20 = (svg.selectAll '.fp_sensor .fp_humidity').style 'fill'
+      colour50 = (svg.selectAll '.fp_sensor .fp_humidity').style 'fill'
 
-      sensor.properties.humidities = [40]
+      sensor.properties.humidities = [60]
       sensors.plotMap {
         type: "FeatureCollection"
         features: [unit_square_room, sensor]
         }
 
-      color40 = (svg.selectAll '.fp_sensor .fp_humidity').style 'fill'
-      color40.should.not.equal colour20
+      color60 = (svg.selectAll '.fp_sensor .fp_humidity').style 'fill'
+      color60.should.not.equal colour50
 
 
     it 'shows temperature as the colour of a circle', ->

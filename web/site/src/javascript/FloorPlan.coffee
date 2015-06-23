@@ -32,11 +32,17 @@ do -> Array::filter ?= (callback) ->
 exports.FloorPlan = class FloorPlan
   constructor: (@svg) ->
 
-  plotMap: (featureCollection) ->
-    rooms = featureCollection.features.filter (f) ->
+  @filterRoomFeatures: (features) ->
+    features.filter (f) ->
       f.properties?.type is 'room'
-    sensors = featureCollection.features.filter (f) ->
+
+  @filterSensorFeatures: (features) ->
+    features.filter (f) ->
       f.properties?.type is 'sensor'
+
+  plotMap: (featureCollection) ->
+    rooms = FloorPlan.filterRoomFeatures featureCollection.features
+    sensors = FloorPlan.filterSensorFeatures featureCollection.features
 
     @._updateScales [rooms..., sensors...]
     @._plotRooms rooms
@@ -85,8 +91,12 @@ exports.FloorPlan = class FloorPlan
   _plotSensors: (features) ->
     # colour scale, domain is 20C-40C
     colours = cb_RdYlBu
-    colourMapper = d3.scale.linear()
-      .domain d3.range 20, 40, (40-20) / (colours.length - 1)
+    [t_min, t_max, h_min, h_max] = [20, 30, 55, 65]
+    temp_colour_mapper = d3.scale.linear()
+      .domain d3.range t_max, t_min, (t_min-t_max) / (colours.length - 1)
+      .range colours
+    hum_colour_mapper = d3.scale.linear()
+      .domain d3.range h_max, h_min, (h_min-h_max) / (colours.length - 1)
       .range colours
 
     sensor_sel = @svg.selectAll '.fp_sensor'
@@ -97,26 +107,26 @@ exports.FloorPlan = class FloorPlan
     sensor_node_sel.append 'circle'
         .attr 'class', 'fp_humidity'
         .attr 'r', '30'
-        .attr 'fill-opacity', '0.5'
+        .style 'fill-opacity', '0.5'
     sensor_node_sel.append 'circle'
         .attr 'class', 'fp_temperature'
         .attr 'r', '10'
     sensor_sel.select('.fp_humidity')
         .attr 'cx', (d) => Math.round @scaleX d.geometry.coordinates[0]
         .attr 'cy', (d) => Math.round @scaleY d.geometry.coordinates[1]
-        .attr 'fill', (d) ->
+        .style 'fill', (d) ->
           if d.properties?.humidities
             [..., current] = d.properties.humidities
-            colourMapper current
+            hum_colour_mapper current
           else
             'black'
     sensor_sel.select('.fp_temperature')
         .attr 'cx', (d) => Math.round @scaleX d.geometry.coordinates[0]
         .attr 'cy', (d) => Math.round @scaleY d.geometry.coordinates[1]
-        .attr 'fill', (d) ->
+        .style 'fill', (d) ->
           if d.properties?.temperatures
             [..., current] = d.properties.temperatures
-            colourMapper current
+            temp_colour_mapper current
           else
             'black'
 
