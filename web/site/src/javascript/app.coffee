@@ -16,6 +16,7 @@ addDebug = (fn) -> (d...) ->
 
 App =
   start: ->
+    ###
     mainChart = new LineChart('#' + anchorId + ' svg')
     dataMgr = new DataMgr
     dataMgr.setSource (callback) ->
@@ -23,18 +24,29 @@ App =
           callback(TS.toNv(d))
       .addSubscriber mainChart.updateChart
       .begin()
+    ###
 
     width = 512
     height = 512
-    svg = d3.select("body").append("svg")
-        .attr("width", width)
-        .attr("height", height)
-    plan = new FloorPlan.FloorPlan(svg)
+    svg = d3.select '#vis svg'
+        .attr 'width', width
+        .attr 'height', height
+    plan = new FloorPlan.FloorPlan svg
 
-    $.getJSON "/data/floor_0.geojson", (data, err) ->
-      if err
-        console.error err
-      plan.plotMap(data)
+    map_features =
+      type: 'FeatureCollection'
+      features: []
 
+    load_map_features = (url) ->
+      $.getJSON url, (data) ->
+          if !data.features
+            console.error "loaded invalid data: #{url}"
+          map_features.features.push f for f in data.features
+          plan.plotMap map_features
+        .fail ->
+          console.error "couldn't load map data: #{url}"
+
+    load_map_features '/data/floor_0.geojson'
+    load_map_features '/data/sensors.geojson'
 
 module.exports = App

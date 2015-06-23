@@ -1,0 +1,33 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10, 10]
+      },
+      "properties": {
+        "type": "sensor",
+        "name": "Sensor 1",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20, 7]
+      },
+      "properties": {
+        "type": "sensor",
+        "name": "Sensor 2",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    }
+  ]
+}
