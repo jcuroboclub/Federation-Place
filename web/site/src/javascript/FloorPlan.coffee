@@ -89,16 +89,24 @@ exports.FloorPlan = class FloorPlan
         .style "fill", (d, i) -> cb_pastel1[i]
 
   _plotSensors: (features) ->
-    # colour scale, domain is 20C-40C
+    # colour scale
     colours = cb_RdYlBu
     [t_min, t_max, h_min, h_max] = [20, 30, 55, 65]
     temp_colour_mapper = d3.scale.linear()
-      .domain d3.range t_max, t_min, (t_min-t_max) / (colours.length - 1)
+      .domain d3.range t_max, t_min, (t_min - t_max) / (colours.length - 1)
       .range colours
     hum_colour_mapper = d3.scale.linear()
-      .domain d3.range h_max, h_min, (h_min-h_max) / (colours.length - 1)
+      .domain d3.range h_max, h_min, (h_min - h_max) / (colours.length - 1)
       .range colours
 
+    # get tooltip
+    tip = d3.select('#fp_tip')
+
+    # extract data
+    current_h = (d) -> [..., h] = d.properties.humidities; h
+    current_t = (d) -> [..., t] = d.properties.temperatures; t
+
+    # do update
     sensor_sel = @svg.selectAll '.fp_sensor'
         .data features
     sensor_node_sel = sensor_sel.enter()
@@ -111,22 +119,31 @@ exports.FloorPlan = class FloorPlan
     sensor_node_sel.append 'circle'
         .attr 'class', 'fp_temperature'
         .attr 'r', '10'
-    sensor_sel.select('.fp_humidity')
+    sensor_sel.select '.fp_humidity'
         .attr 'cx', (d) => Math.round @scaleX d.geometry.coordinates[0]
         .attr 'cy', (d) => Math.round @scaleY d.geometry.coordinates[1]
         .style 'fill', (d) ->
           if d.properties?.humidities
-            [..., current] = d.properties.humidities
-            hum_colour_mapper current
+            hum_colour_mapper current_h d
           else
             'black'
-    sensor_sel.select('.fp_temperature')
+        .on 'mouseover', (d) ->
+            tip.transition()
+                .duration 200
+                .style 'opacity', .9
+            tip .html('test')#(current_t d + "<br/>"  + current_h d)
+                .style 'left', (d3.event.pageX) + 'px'
+                .style 'top', (d3.event.pageY - 28) + 'px'
+        .on 'mouseout', (d) ->
+            tip.transition()
+                .duration 500
+                .style 'opacity', 0
+    sensor_sel.select '.fp_temperature'
         .attr 'cx', (d) => Math.round @scaleX d.geometry.coordinates[0]
         .attr 'cy', (d) => Math.round @scaleY d.geometry.coordinates[1]
         .style 'fill', (d) ->
           if d.properties?.temperatures
-            [..., current] = d.properties.temperatures
-            temp_colour_mapper current
+            temp_colour_mapper current_t d
           else
             'black'
 
