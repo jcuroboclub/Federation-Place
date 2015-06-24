@@ -10,6 +10,9 @@ cb_pastel1 = ["#fbb4ae","#b3cde3","#ccebc5","#decbe4","#fed9a6","#ffffcc",
 cb_RdYlBu = ["#a50026","#d73027","#f46d43","#fdae61","#fee090","#ffffbf",
     "#e0f3f8","#abd9e9","#74add1","#4575b4","#313695"]
 
+# Constants
+[t_min, t_max, h_min, h_max] = [20, 30, 55, 65] # temp and humidity range
+
 bounds = (features) ->
   xs = []
   ys = []
@@ -66,13 +69,13 @@ exports.FloorPlan = class FloorPlan
       dy = Math.abs (@scaleY 1) - (@scaleY 0)
       if dx > dy
         @scaleX.domain [
-            (@scaleX.invert 1/2*width - width * dx/dy/2),
-            (@scaleX.invert 1/2*width + width * dx/dy/2)
+            (@scaleX.invert width/2 - width/2 * dx/dy),
+            (@scaleX.invert width/2 + width/2 * dx/dy)
           ]
       else if dy > dx
         @scaleY.domain [
-            (@scaleY.invert 1/2*height + height * dy/dx/2),
-            (@scaleY.invert 1/2*height - height * dy/dx/2)
+            (@scaleY.invert height/2 + height/2 * dy/dx),
+            (@scaleY.invert height/2 - height/2 * dy/dx)
           ]
 
   _plotRooms: (features) ->
@@ -91,7 +94,6 @@ exports.FloorPlan = class FloorPlan
   _plotSensors: (features) ->
     # colour scale
     colours = cb_RdYlBu
-    [t_min, t_max, h_min, h_max] = [20, 30, 55, 65]
     temp_colour_mapper = d3.scale.linear()
       .domain d3.range t_max, t_min, (t_min - t_max) / (colours.length - 1)
       .range colours
