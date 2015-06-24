@@ -79,14 +79,24 @@ svg2 = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("id", "floorPlanTest")
+tooltip = d3.select 'body'
+    .append 'div'
+    .attr 'class', 'tooltip'
+    .attr 'id', 'fp_tip'
+    .style 'opacity', 0
 
 # helper functions
-clone = (obj) ->
-  $.extend({}, obj)
+clone = (obj) -> $.extend {}, obj
 
-deepClone = (obj) ->
-  $.extend(true, {}, obj)
+deepClone = (obj) -> $.extend true, {}, obj
 
+flushAllD3Transitions = ->
+  now = Date.now
+  Date.now = -> Infinity
+  do d3.timer.flush
+  Date.now = now
+
+# Tests
 describe 'FloorPlan', ->
   afterEach ->
     do (svg.selectAll '*').remove
@@ -247,3 +257,19 @@ describe 'FloorPlan', ->
 
       color40 = (svg.selectAll '.fp_sensor .fp_temperature').style 'fill'
       color40.should.not.equal colour20
+
+
+    it 'shows a tooltip on mouseover', ->
+      sensors = new FloorPlan.FloorPlan svg
+      sensors.plotMap {type: "FeatureCollection", features: [sensor1]}
+      humidity_node = (svg.select '.fp_humidity')[0][0]
+
+      (+tooltip.style 'opacity').should.equal 0
+
+      humidity_node.dispatchEvent new MouseEvent 'mouseover'
+      do flushAllD3Transitions
+      (+tooltip.style 'opacity').should.be.above 0
+
+      humidity_node.dispatchEvent new MouseEvent 'mouseout'
+      do flushAllD3Transitions
+      (+tooltip.style 'opacity').should.equal 0

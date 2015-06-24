@@ -30,6 +30,11 @@ App =
     svg = d3.select '#vis svg'
         .attr 'width', width
         .attr 'height', height
+    tooltip = d3.select 'body'
+        .append 'div'
+        .attr 'class', 'tooltip'
+        .attr 'id', 'fp_tip'
+        .style 'opacity', 0
     plan = new FloorPlan svg
 
     map_features =
