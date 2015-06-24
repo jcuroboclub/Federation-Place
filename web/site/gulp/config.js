@@ -55,7 +55,13 @@ module.exports = {
             outputName: 'index.js',
             extensions: ['.coffee'],
             require: ['jquery', 'underscore', 'd3', 'nvd3/build/nv.d3.js']
-        }]
+        }, {
+            entries: src + '/javascript/sensors.coffee',
+            dest: dest,
+            outputName: 'sensors.js',
+            extensions: ['.coffee'],
+            require: ['jquery', 'underscore', 'd3', 'nvd3/build/nv.d3.js']
+	}]
     },
     production: {
         cssSrc: dest + '/*.css',
