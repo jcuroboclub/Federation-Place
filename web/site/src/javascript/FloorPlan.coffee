@@ -130,16 +130,16 @@ exports.FloorPlan = class FloorPlan
           else
             'black'
         .on 'mouseover', (d) ->
-            tip.transition()
-                .duration 200
-                .style 'opacity', .9
-            tip .html('test')#(current_t d + "<br/>"  + current_h d)
-                .style 'left', (d3.event.pageX) + 'px'
-                .style 'top', (d3.event.pageY - 28) + 'px'
+          tip.transition()
+            .duration 200
+            .style 'opacity', .9
+          tip .html('test')#(current_t d + "<br/>"  + current_h d)
+            .style 'left', (d3.event.pageX) + 'px'
+            .style 'top', (d3.event.pageY - 28) + 'px'
         .on 'mouseout', (d) ->
-            tip.transition()
-                .duration 500
-                .style 'opacity', 0
+          tip.transition()
+            .duration 500
+            .style 'opacity', 0
     sensor_sel.select '.fp_temperature'
         .attr 'cx', (d) => Math.round @scaleX d.geometry.coordinates[0]
         .attr 'cy', (d) => Math.round @scaleY d.geometry.coordinates[1]

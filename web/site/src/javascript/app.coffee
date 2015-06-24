@@ -69,7 +69,7 @@ App =
 
     load_map_features = (url) ->
       $.getJSON url, (data) ->
-          addFeatureCollection data
+        addFeatureCollection data
         .fail ->
           console.error "couldn't load map data: #{url}"
 
