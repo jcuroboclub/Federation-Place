@@ -32,7 +32,7 @@ Hardware Connections for RGB LED (common cathode)
 #define SENSOR_ID 1
 
 // Time delay between sensor readings (in milliseconds)
-#define SENSOR_PERIOD 5000
+#define SENSOR_PERIOD 20000
 
 //DEFINE LIBRARIES
 #include <SoftwareSerial.h>
@@ -91,6 +91,9 @@ void setup() {
   digitalWrite(LEDpins[0], 0);
   digitalWrite(LEDpins[1], 0);
   digitalWrite(LEDpins[2], 0);
+  
+  // Just once, read the sensors on startup
+  readSensors();
 }
 
 void loop() {
