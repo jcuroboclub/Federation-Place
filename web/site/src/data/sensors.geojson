@@ -21,6 +21,22 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
+        "coordinates": [10, 10, 1]
+      },
+      "properties": {
+        "type": "sensor",
+        "id": "3",
+        "description": "Hallway 2",
+        "channel": "42694",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
         "coordinates": [20, 7, 2]
       },
       "properties": {

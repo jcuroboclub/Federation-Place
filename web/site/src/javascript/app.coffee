@@ -15,11 +15,16 @@ do -> Array::unique ?= ->
   output = {}
   output[@[key]] = @[key] for key in [0...@length]
   value for key, value of output
+do -> Array::filter ?= (callback) ->
+    element for element in this when callback(element)
 
 # inline debugger
 addDebug = (fn) -> (d...) ->
   console.log fn, d
   fn d...
+
+# helper functions
+floor_of = (sensor) -> sensor.geometry.coordinates[2]
 
 App =
   start: ->
@@ -27,12 +32,35 @@ App =
 
   display_overview: ->
     $.getJSON '/data/sensors.geojson', (sensor_metadata) ->
-        floors = do (s.geometry.coordinates[2] for s in sensor_metadata.features).unique
+        floors = do (floor_of s for s in sensor_metadata.features).unique
+        sensors_by_floor =
+          for f in floors
+            sensor_metadata.features.filter (s) ->
+              (floor_of s) == f
 
         sensor = sensor_metadata.features[0] # TODO for each
         svg = d3.select '#vis svg'
           .style 'height', '80vh'
         parent = svg
+
+        # sizing for each node
+        floor_title_height = 20
+        node_h_spacing = +(parent.style 'width')[0..-3] / floors.length
+        node_v_spacing = (+(parent.style 'height')[0..-3] /
+          Math.max (s.length for s in sensors_by_floor)...) - floor_title_height
+
+        # aspect ratio
+        w_h_ratio = 4
+        if node_h_spacing > node_v_spacing*w_h_ratio
+          node_h_spacing = node_v_spacing*w_h_ratio
+        if node_v_spacing > node_h_spacing/w_h_ratio
+          node_v_spacing = node_h_spacing/w_h_ratio
+
+
+        node_h_margin = 20
+        node_v_margin = 10
+        node_width = node_h_spacing - node_h_margin
+        node_height = node_v_spacing - node_v_margin
 
         dataMgr = new DataMgr
         dataMgr
@@ -46,12 +74,14 @@ App =
 
             # svg:g container for each sensor
             sensor_sel = parent.selectAll '.sensor'
-              .data [sensor]
+              .data sensor_metadata.features
             sensor_enter = sensor_sel.enter()
               .append 'g'
               .attr 'class', 'sensor'
               .attr "transform", (d) ->
-                "translate(#{0},#{10})"
+                "translate(#{(floors.indexOf floor_of d)*node_h_spacing},
+                #{floor_title_height + node_v_spacing *
+                (sensors_by_floor[floors.indexOf floor_of d].indexOf d)})"
 
             # Textual current data for each sensor
             sensor_data = sensor_enter.append 'text'
@@ -62,6 +92,7 @@ App =
                 "#{d.properties.description}:
                 #{do d.properties.temperatures.last}ºC,
                 #{do d.properties.humidities.last}% humidity"
+            text_height = +(sensor_sel.select('.status').style 'height')[0..-3]
 
             # Temperature history plot
             temp_chart = null
@@ -70,11 +101,11 @@ App =
               .call -> temp_chart = new LineChart sensor_sel.select '.temp_history'
             sensor_sel.select '.temp_history'
               .attr "transform",
-                "translate(0,#{(+(sensor_sel.select('.status').style 'height')[0..-3])-15})"
+                "translate(0,#{text_height-15})"
             temp_chart.chart
-              .width +((svg.style 'width')[0..-3]) / floors.length / 2
-              .height '100'
-              .margin {bottom: 0}
+              .width node_width/2
+              .height node_height - text_height - 5
+              .margin {bottom: 0, right: 30}
               .showLegend? false
               .useInteractiveGuideline? false
             temp_chart.updateChart [data[0]]
@@ -86,12 +117,12 @@ App =
               .call -> hum_chart = new LineChart sensor_sel.select '.hum_history'
             sensor_sel.select '.hum_history'
               .attr "transform",
-                "translate(#{+((svg.style 'width')[0..-3]) / floors.length / 2},
-                #{(+(sensor_sel.select('.status').style 'height')[0..-3])-15})"
+                "translate(#{node_width / 2},
+                #{text_height-15})"
             hum_chart.chart
-              .width +((svg.style 'width')[0..-3]) / floors.length / 2
-              .height '100'
-              .margin {bottom: 0}
+              .width node_width/2
+              .height node_height - text_height - 5
+              .margin {bottom: 0, right: 30}
               .showLegend? false
               .useInteractiveGuideline? false
             hum_chart.updateChart [data[1]]
