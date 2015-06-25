@@ -32,13 +32,13 @@ App =
 
   display_overview: ->
     $.getJSON '/data/sensors.geojson', (sensor_metadata) ->
-        floors = do (floor_of s for s in sensor_metadata.features).unique
+        sensors = sensor_metadata.features
+        floors = do (floor_of s for s in sensors).unique
         sensors_by_floor =
           for f in floors
-            sensor_metadata.features.filter (s) ->
+            sensors.filter (s) ->
               (floor_of s) == f
 
-        sensor = sensor_metadata.features[0] # TODO for each
         svg = d3.select '#vis svg'
           .style 'height', '80vh'
         parent = svg
@@ -56,78 +56,91 @@ App =
         if node_v_spacing > node_h_spacing/w_h_ratio
           node_v_spacing = node_h_spacing/w_h_ratio
 
-
         node_h_margin = 20
         node_v_margin = 10
         node_width = node_h_spacing - node_h_margin
         node_height = node_v_spacing - node_v_margin
 
-        dataMgr = new DataMgr
-        dataMgr
-          .setSource (callback) ->
-            TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d), 2000
-          .addSubscriber (data) ->
-            # Add latest data to the sensor object
-            sensor.properties.temperatures = (d.y for d in data[0].values)
-            sensor.properties.humidities = (d.y for d in data[1].values)
-            sensor.properties.th_times = (d.x for d in data[0].values)
+        temp_charts = {}
+        hum_charts = {}
 
-            # svg:g container for each sensor
-            sensor_sel = parent.selectAll '.sensor'
-              .data sensor_metadata.features
-            sensor_enter = sensor_sel.enter()
-              .append 'g'
-              .attr 'class', 'sensor'
-              .attr "transform", (d) ->
-                "translate(#{(floors.indexOf floor_of d)*node_h_spacing},
-                #{floor_title_height + node_v_spacing *
-                (sensors_by_floor[floors.indexOf floor_of d].indexOf d)})"
+        bind_dataMgr_to_sensor = (sensor) ->
+          dataMgr = new DataMgr
+          dataMgr
+            .setSource (callback) ->
+              TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d), 2000
+            .addSubscriber (data) ->
+              # Add latest data to the sensor object
+              sensor.properties.temperatures = (d.y for d in data[0].values)
+              sensor.properties.humidities = (d.y for d in data[1].values)
+              sensor.properties.th_times = (d.x for d in data[0].values)
+              sensor.properties.nvData = data
 
-            # Textual current data for each sensor
-            sensor_data = sensor_enter.append 'text'
-              .attr 'class', 'status'
-              .attr 'dy', '1em'
-            sensor_sel.select '.status'
-              .text (d) ->
-                "#{d.properties.description}:
-                #{do d.properties.temperatures.last}ºC,
-                #{do d.properties.humidities.last}% humidity"
-            text_height = +(sensor_sel.select('.status').style 'height')[0..-3]
+              # svg:g container for each sensor
+              sensor_sel = parent.selectAll '.sensor'
+                .data sensors
+              sensor_enter = sensor_sel.enter()
+                .append 'g'
+                .attr 'class', 'sensor'
+                .attr "transform", (d) ->
+                  "translate(#{(floors.indexOf floor_of d)*node_h_spacing},
+                  #{floor_title_height + node_v_spacing *
+                  (sensors_by_floor[floors.indexOf floor_of d].indexOf d)})"
 
-            # Temperature history plot
-            temp_chart = null
-            sensor_enter.append 'g'
-              .attr 'class', 'temp_history'
-              .call -> temp_chart = new LineChart sensor_sel.select '.temp_history'
-            sensor_sel.select '.temp_history'
-              .attr "transform",
-                "translate(0,#{text_height-15})"
-            temp_chart.chart
-              .width node_width/2
-              .height node_height - text_height - 5
-              .margin {bottom: 0, right: 30}
-              .showLegend? false
-              .useInteractiveGuideline? false
-            temp_chart.updateChart [data[0]]
+              # Textual current data for each sensor
+              sensor_data = sensor_enter.append 'text'
+                .attr 'class', 'status'
+                .attr 'dy', '1em'
+              sensor_sel.select '.status'
+                .text (d) ->
+                  "#{d.properties.description}:
+                  #{do d.properties.temperatures.last}ºC,
+                  #{do d.properties.humidities.last}% humidity"
+              text_height = +(sensor_sel.select('.status').style 'height')[0..-3]
 
-            # Humidity history plot
-            hum_chart = null
-            sensor_enter.append 'g'
-              .attr 'class', 'hum_history'
-              .call -> hum_chart = new LineChart sensor_sel.select '.hum_history'
-            sensor_sel.select '.hum_history'
-              .attr "transform",
-                "translate(#{node_width / 2},
-                #{text_height-15})"
-            hum_chart.chart
-              .width node_width/2
-              .height node_height - text_height - 5
-              .margin {bottom: 0, right: 30}
-              .showLegend? false
-              .useInteractiveGuideline? false
-            hum_chart.updateChart [data[1]]
+              # Temperature history plot
+              sensor_enter.append 'g'
+                .attr 'class', 'temp_history'
+                .each (d) ->
+                  temp_chart = new LineChart d3.select @
+                  temp_chart.chart
+                    .margin {bottom: 0, right: 30}
+                    .showLegend? false
+                    .useInteractiveGuideline? false
+                  temp_charts[d.properties.id] = temp_chart
+              sensor_sel.select '.temp_history'
+                .attr "transform",
+                  "translate(0,#{text_height-15})"
+                .each (d) ->
+                  temp_chart = temp_charts[d.properties.id]
+                  temp_chart.chart
+                    .width node_width/2
+                    .height node_height - text_height - 5
+                  temp_chart.updateChart [d.properties.nvData?[0]]
+
+              # Humidity history plot
+              sensor_enter.append 'g'
+                .attr 'class', 'hum_history'
+                .each (d) ->
+                  hum_chart = new LineChart d3.select @
+                  hum_chart.chart
+                    .margin {bottom: 0, right: 30}
+                    .showLegend? false
+                    .useInteractiveGuideline? false
+                  hum_charts[d.properties.id] = hum_chart
+              sensor_sel.select '.hum_history'
+                .attr "transform",
+                  "translate(#{node_width / 2},
+                  #{text_height-15})"
+                .each (d) ->
+                  hum_chart = hum_charts[d.properties.id]
+                  hum_chart.chart
+                    .width node_width/2
+                    .height node_height - text_height - 5
+                  hum_chart.updateChart [d.properties.nvData?[1]]
 
           .begin()
+        bind_dataMgr_to_sensor sensor for sensor in sensors
       .fail ->
         console.error "couldn't load map data: /data/sensors.geojson"
 
