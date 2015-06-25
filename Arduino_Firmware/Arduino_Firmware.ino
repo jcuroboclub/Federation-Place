@@ -29,7 +29,7 @@ Hardware Connections for RGB LED (common cathode)
 #define DEBUG 1
 
 // SENSOR ID. Each sensor must have a unique ID, which is used to determine which reading comes from which part of the building.
-#define SENSOR_ID 7
+#define SENSOR_ID 3
 
 // Time delay between sensor readings (in seconds)
 unsigned int sensor_period = 20;
@@ -184,7 +184,7 @@ void readButtons()
 {
   static unsigned long last_change = 0;
   unsigned long current_time = millis();
-  if ((current_time - last_change) < 1000) {
+  if (((current_time - last_change) < 2000) && (buttonStatus != NoButtons)) {
     // It has been too soon since the last change. Disallow this.
     return;
   }
@@ -283,8 +283,22 @@ void updateStatusLED()
       }
       break;
     case NodeOK:
-      // Solid green LED
-      ledRGB(0, 40, 0);
+      // Display the button status on this LED
+      switch (buttonStatus) {
+        case HappyDown:
+          ledRGB(0, 255, 0); // Bright green
+          break;
+        case IndifferentDown:
+          ledRGB(128, 128, 48); // Whitish green
+          break;
+        case SadDown:
+          ledRGB(255, 0, 0); // Red
+          break;
+        case NoButtons:
+          ledRGB(0, 1, 0); // Very faint green
+          break;
+      }
+      
       break;
     case LossOfRadioContact:
       // Blinking red LED
