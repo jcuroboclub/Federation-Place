@@ -9,9 +9,13 @@ exports.LineChart = class LineChart
   _makeChart: ->
     chart = nv.models.lineChart()
     chart.useInteractiveGuideline?(true)
-    chart.xAxis.axisLabel('Time').tickFormat (d) ->
-      d3.time.format('%H:%M') new Date(d)
-    chart.yAxis.axisLabel('Temp (C)').tickFormat d3.format('.1f')
+    chart.xAxis
+      #.axisLabel 'Time'
+      .tickFormat (d) ->
+        (d3.time.format '%I:%M %p') new Date d
+    chart.yAxis
+      .axisLabel 'Temp (C)'
+      .tickFormat d3.format '.2f'
     # chart.color (d) -> getColor d.key
     nv.utils.windowResize(chart.update)
     return chart

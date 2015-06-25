@@ -31,14 +31,15 @@ App =
 
         sensor = sensor_metadata.features[0] # TODO for each
         svg = d3.select '#vis svg'
-          .style 'height', '100vh'
+          .style 'height', '80vh'
         parent = svg
 
         dataMgr = new DataMgr
         dataMgr
           .setSource (callback) ->
-            TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d)
+            TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d), 2000
           .addSubscriber (data) ->
+            # Add latest data to the sensor object
             sensor.properties.temperatures = (d.y for d in data[0].values)
             sensor.properties.humidities = (d.y for d in data[1].values)
             sensor.properties.th_times = (d.x for d in data[0].values)
@@ -49,6 +50,8 @@ App =
             sensor_enter = sensor_sel.enter()
               .append 'g'
               .attr 'class', 'sensor'
+              .attr "transform", (d) ->
+                "translate(#{0},#{10})"
 
             # Textual current data for each sensor
             sensor_data = sensor_enter.append 'text'
@@ -70,7 +73,8 @@ App =
                 "translate(0,#{(+(sensor_sel.select('.status').style 'height')[0..-3])-15})"
             temp_chart.chart
               .width +((svg.style 'width')[0..-3]) / floors.length / 2
-              .height '150'
+              .height '100'
+              .margin {bottom: 0}
               .showLegend? false
               .useInteractiveGuideline? false
             temp_chart.updateChart [data[0]]
@@ -86,7 +90,8 @@ App =
                 #{(+(sensor_sel.select('.status').style 'height')[0..-3])-15})"
             hum_chart.chart
               .width +((svg.style 'width')[0..-3]) / floors.length / 2
-              .height '150'
+              .height '100'
+              .margin {bottom: 0}
               .showLegend? false
               .useInteractiveGuideline? false
             hum_chart.updateChart [data[1]]
