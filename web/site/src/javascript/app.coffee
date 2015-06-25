@@ -9,22 +9,79 @@ $ = require 'jquery'
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
 
+# Prototype updaters
+do -> Array::last ?= -> @[@length - 1]
+do -> Array::unique ?= ->
+  output = {}
+  output[@[key]] = @[key] for key in [0...@length]
+  value for key, value of output
+
+# inline debugger
 addDebug = (fn) -> (d...) ->
   console.log fn, d
   fn d...
 
 App =
   start: ->
-    ###
-    mainChart = new LineChart('#' + anchorId + ' svg')
-    dataMgr = new DataMgr
-    dataMgr.setSource (callback) ->
-        TS.loadFeed channelid, (d) ->
-          callback(TS.toNv(d))
-      .addSubscriber mainChart.updateChart
-      .begin()
-    ###
+    do App.display_overview
 
+  display_overview: ->
+    $.getJSON '/data/sensors.geojson', (data) ->
+        floors = do (s.geometry.coordinates[2] for s in data.features).unique
+
+        sensor = data.features[0] # TODO for each
+        svg = d3.select '#vis svg'
+          .style 'height', '100vh'
+        parent = svg
+
+        dataMgr = new DataMgr
+        dataMgr
+          .setSource (callback) ->
+            TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d)
+          .addSubscriber (data) ->
+            sensor.properties.temperatures = (d.y for d in data[0].values)
+            sensor.properties.humidities = (d.y for d in data[1].values)
+            sensor.properties.th_times = (d.x for d in data[0].values)
+
+            sensor_g = parent.append 'g'
+              .attr 'class', 'sensor'
+            sensor_data = sensor_g.append 'text'
+              .attr 'class', 'status'
+              .attr 'dy', '1em'
+              .text "#{sensor.properties.description}:
+                     #{do sensor.properties.temperatures.last}ºC,
+                     #{do sensor.properties.humidities.last}% humidity"
+
+            sensor_temp_g = sensor_g.append 'g'
+              .attr 'class', 'history'
+              .attr "transform",
+                "translate(0,#{(+(sensor_data.style 'height')[0..-3])-15})"
+            chart = new LineChart sensor_temp_g
+            chart.chart
+              .width +((svg.style 'width')[0..-3]) / floors.length / 2
+              .height '150'
+              .showLegend? false
+              .useInteractiveGuideline? false
+            chart.updateChart [data[0]]
+
+            sensor_hum_g = sensor_g.append 'g'
+              .attr 'class', 'history'
+              .attr "transform",
+                "translate(#{+((svg.style 'width')[0..-3]) / floors.length / 2},
+                #{(+(sensor_data.style 'height')[0..-3])-15})"
+            chart = new LineChart sensor_hum_g
+            chart.chart
+              .width +((svg.style 'width')[0..-3]) / floors.length / 2
+              .height '150'
+              .showLegend? false
+              .useInteractiveGuideline? false
+            chart.updateChart [data[0]]
+
+          .begin()
+      .fail ->
+        console.error "couldn't load map data: /data/sensors.geojson"
+
+  display_floorplan: ->
     width = 512
     height = 512
     svg = d3.select '#vis svg'
@@ -56,11 +113,11 @@ App =
           .setSource (callback) ->
             TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d)
           .addSubscriber (data) ->
-            console.log data
+            #console.log data
             sensor.properties.temperatures = (d.y for d in data[0].values)
             sensor.properties.humidities = (d.y for d in data[1].values)
             sensor.properties.th_times = (d.x for d in data[0].values)
-            console.log sensor.properties
+            #console.log sensor.properties
             plan.plotMap map_features
           .begin()
       # updaters for any sensors

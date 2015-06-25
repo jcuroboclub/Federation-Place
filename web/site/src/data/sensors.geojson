@@ -5,11 +5,12 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [10, 10]
+        "coordinates": [10, 10, 1]
       },
       "properties": {
         "type": "sensor",
-        "name": "Sensor 1",
+        "id": "1",
+        "description": "Hallway",
         "channel": "42694",
         "temperatures": [],
         "humidities": [],
@@ -20,11 +21,11 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [20, 7]
+        "coordinates": [20, 7, 2]
       },
       "properties": {
         "type": "sensor",
-        "name": "Sensor 2",
+        "id": "2",
         "channel": "42695",
         "temperatures": [],
         "humidities": [],

@@ -17,4 +17,6 @@ exports.LineChart = class LineChart
     return chart
 
   updateChart: (data) =>
-    d3.select(@target).datum(data).call @chart
+    @chart.yAxis.axisLabel data[0].key
+    (if typeof @target is 'string' then d3.select(@target) else @target)
+      .datum(data).call @chart
