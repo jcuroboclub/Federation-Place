@@ -26,10 +26,10 @@ App =
     do App.display_overview
 
   display_overview: ->
-    $.getJSON '/data/sensors.geojson', (data) ->
-        floors = do (s.geometry.coordinates[2] for s in data.features).unique
+    $.getJSON '/data/sensors.geojson', (sensor_metadata) ->
+        floors = do (s.geometry.coordinates[2] for s in sensor_metadata.features).unique
 
-        sensor = data.features[0] # TODO for each
+        sensor = sensor_metadata.features[0] # TODO for each
         svg = d3.select '#vis svg'
           .style 'height', '100vh'
         parent = svg
@@ -43,39 +43,53 @@ App =
             sensor.properties.humidities = (d.y for d in data[1].values)
             sensor.properties.th_times = (d.x for d in data[0].values)
 
-            sensor_g = parent.append 'g'
+            # svg:g container for each sensor
+            sensor_sel = parent.selectAll '.sensor'
+              .data [sensor]
+            sensor_enter = sensor_sel.enter()
+              .append 'g'
               .attr 'class', 'sensor'
-            sensor_data = sensor_g.append 'text'
+
+            # Textual current data for each sensor
+            sensor_data = sensor_enter.append 'text'
               .attr 'class', 'status'
               .attr 'dy', '1em'
-              .text "#{sensor.properties.description}:
-                     #{do sensor.properties.temperatures.last}ºC,
-                     #{do sensor.properties.humidities.last}% humidity"
+            sensor_sel.select '.status'
+              .text (d) ->
+                "#{d.properties.description}:
+                #{do d.properties.temperatures.last}ºC,
+                #{do d.properties.humidities.last}% humidity"
 
-            sensor_temp_g = sensor_g.append 'g'
-              .attr 'class', 'history'
+            # Temperature history plot
+            temp_chart = null
+            sensor_enter.append 'g'
+              .attr 'class', 'temp_history'
+              .call -> temp_chart = new LineChart sensor_sel.select '.temp_history'
+            sensor_sel.select '.temp_history'
               .attr "transform",
-                "translate(0,#{(+(sensor_data.style 'height')[0..-3])-15})"
-            chart = new LineChart sensor_temp_g
-            chart.chart
+                "translate(0,#{(+(sensor_sel.select('.status').style 'height')[0..-3])-15})"
+            temp_chart.chart
               .width +((svg.style 'width')[0..-3]) / floors.length / 2
               .height '150'
               .showLegend? false
               .useInteractiveGuideline? false
-            chart.updateChart [data[0]]
+            temp_chart.updateChart [data[0]]
 
-            sensor_hum_g = sensor_g.append 'g'
-              .attr 'class', 'history'
+            # Humidity history plot
+            hum_chart = null
+            sensor_enter.append 'g'
+              .attr 'class', 'hum_history'
+              .call -> hum_chart = new LineChart sensor_sel.select '.hum_history'
+            sensor_sel.select '.hum_history'
               .attr "transform",
                 "translate(#{+((svg.style 'width')[0..-3]) / floors.length / 2},
-                #{(+(sensor_data.style 'height')[0..-3])-15})"
-            chart = new LineChart sensor_hum_g
-            chart.chart
+                #{(+(sensor_sel.select('.status').style 'height')[0..-3])-15})"
+            hum_chart.chart
               .width +((svg.style 'width')[0..-3]) / floors.length / 2
               .height '150'
               .showLegend? false
               .useInteractiveGuideline? false
-            chart.updateChart [data[0]]
+            hum_chart.updateChart [data[1]]
 
           .begin()
       .fail ->
