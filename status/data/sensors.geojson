@@ -1,0 +1,53 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10, 10, 1]
+      },
+      "properties": {
+        "type": "sensor",
+        "id": "6",
+        "description": "Hallway",
+        "channel": "42699",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10, 10, 1]
+      },
+      "properties": {
+        "type": "sensor",
+        "id": "7",
+        "description": "Hallway 2",
+        "channel": "42700",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20, 7, 2]
+      },
+      "properties": {
+        "type": "sensor",
+        "id": "13",
+        "description": "Reception",
+        "channel": "42706",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    }
+  ]
+}

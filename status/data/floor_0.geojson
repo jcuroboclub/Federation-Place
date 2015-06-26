@@ -1,0 +1,79 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+        [ [7.5, 0], [22.5, 0], [22.5, 10], [15, 10], [15, 8], [7.5, 8],
+          [7.5, 0] ]
+        ]
+      },
+      "properties": {
+        "type": "room",
+        "name": "Entrance Foyer"
+      }
+    },
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+        [ [12, 8], [15, 8], [15, 10], [22.5, 10], [22.5, 14], [12, 14],
+          [12, 8] ]
+        ]
+      },
+      "properties": {
+        "type": "room",
+        "name": ""
+      }
+    },
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+        [ [22.5, 0], [30, 0], [30, 30], [22.5, 30], [22.5, 0] ]
+        ]
+      },
+      "properties": {
+        "type": "room",
+        "name": "Driveway"
+      }
+    },
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+        [ [0, 0], [7.5, 0], [7.5, 8], [12, 8], [12, 20], [0, 20], [0, 0] ]
+        ]
+      },
+      "properties": {
+        "type": "room",
+        "name": "Upper Foyer"
+      }
+    },
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+        [ [0, 0], [2, 0], [2, 12], [4, 12], [4, 14], [0, 14], [0, 0] ]
+        ]
+      },
+      "properties": {
+        "type": "room",
+        "name": "Stairs"
+      }
+    },
+    { "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+        [ [0, 20], [12, 20], [12, 14], [22.5, 14], [22.5, 30], [0, 30], [0, 20] ]
+        ]
+      },
+      "properties": {
+        "type": "room",
+        "name": "GHD"
+      }
+    }
+  ]
+}
