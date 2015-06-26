@@ -44,7 +44,7 @@ App =
         parent = svg
 
         # sizing for each node
-        floor_title_height = 20
+        floor_title_height = 40
         node_h_spacing = +(parent.style 'width')[0..-3] / floors.length
         node_v_spacing = (+(parent.style 'height')[0..-3] /
           Math.max (s.length for s in sensors_by_floor)...) - floor_title_height
@@ -63,6 +63,15 @@ App =
 
         temp_charts = {}
         hum_charts = {}
+
+        parent.selectAll '.floor_title'
+            .data floors
+          .enter()
+            .append 'text'
+            .attr 'class', 'floor_title'
+            .attr 'dy', '1em'
+            .text (d) -> "Floor #{d}"
+            .attr "x", (d) -> (floors.indexOf d)*node_h_spacing
 
         bind_dataMgr_to_sensor = (sensor) ->
           dataMgr = new DataMgr

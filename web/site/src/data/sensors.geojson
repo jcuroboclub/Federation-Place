@@ -9,9 +9,9 @@
       },
       "properties": {
         "type": "sensor",
-        "id": "1",
+        "id": "6",
         "description": "Hallway",
-        "channel": "42694",
+        "channel": "42699",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -25,9 +25,9 @@
       },
       "properties": {
         "type": "sensor",
-        "id": "3",
+        "id": "7",
         "description": "Hallway 2",
-        "channel": "42694",
+        "channel": "42700",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -41,9 +41,9 @@
       },
       "properties": {
         "type": "sensor",
-        "id": "2",
+        "id": "13",
         "description": "Reception",
-        "channel": "42695",
+        "channel": "42706",
         "temperatures": [],
         "humidities": [],
         "th_times": []
