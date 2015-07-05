@@ -31,7 +31,7 @@ App =
     do App.display_overview
 
   display_overview: ->
-    $.getJSON '/data/sensors.geojson', (sensor_metadata) ->
+    $.getJSON './data/sensors.geojson', (sensor_metadata) ->
         sensors = sensor_metadata.features
         floors = do (floor_of s for s in sensors).unique
         sensors_by_floor =
