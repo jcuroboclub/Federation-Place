@@ -49,10 +49,17 @@ module.exports = {
     browserify: {
         // A separate bundle will be generated for each
         // bundle config in the list below
-        bundleConfigs: [{
+        bundleConfigs: [/*{
             entries: src + '/javascript/index.coffee',
             dest: dest,
             outputName: 'index.js',
+            extensions: ['.coffee'],
+            require: ['jquery', 'underscore', 'd3', 'nvd3/build/nv.d3.js']
+        },*/
+        {
+            entries: src + '/javascript/status/index.coffee',
+            dest: dest,
+            outputName: 'status/index.js',
             extensions: ['.coffee'],
             require: ['jquery', 'underscore', 'd3', 'nvd3/build/nv.d3.js']
         }]
@@ -60,6 +67,9 @@ module.exports = {
     production: {
         cssSrc: dest + '/*.css',
         jsSrc: dest + '/*.js',
+        dest: dest
+    },
+    deploy: {
         dest: dest
     },
     nvd3css: {
