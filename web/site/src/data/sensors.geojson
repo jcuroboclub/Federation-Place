@@ -5,12 +5,12 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [10, 10, 1]
+        "coordinates": [10, 10, 3]
       },
       "properties": {
         "type": "sensor",
         "id": "6",
-        "description": "Hallway",
+        "description": "3rd Floor Rear Kitchen",
         "channel": "42699",
         "temperatures": [],
         "humidities": [],
@@ -21,13 +21,45 @@
       "type": "Feature",
       "geometry": {
         "type": "Point",
-        "coordinates": [10, 10, 1]
+        "coordinates": [10, 10, 3]
       },
       "properties": {
         "type": "sensor",
         "id": "7",
-        "description": "Hallway 2",
+        "description": "3rd Floor Foyer",
         "channel": "42700",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20, 7, 0]
+      },
+      "properties": {
+        "type": "sensor",
+        "id": "13",
+        "description": "Entrance Foyer Display",
+        "channel": "42706",
+        "temperatures": [],
+        "humidities": [],
+        "th_times": []
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20, 7, 1]
+      },
+      "properties": {
+        "type": "sensor",
+        "id": "3",
+        "description": "1st Floor Foyer (GHD)",
+        "channel": "42696",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -41,9 +73,9 @@
       },
       "properties": {
         "type": "sensor",
-        "id": "13",
-        "description": "Reception",
-        "channel": "42706",
+        "id": "11",
+        "description": "2nd Floor Foyer (GHD)",
+        "channel": "42704",
         "temperatures": [],
         "humidities": [],
         "th_times": []
