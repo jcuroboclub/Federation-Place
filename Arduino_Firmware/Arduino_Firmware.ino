@@ -29,10 +29,11 @@ Hardware Connections for RGB LED (common cathode)
 #define DEBUG 1
 
 // SENSOR ID. Each sensor must have a unique ID, which is used to determine which reading comes from which part of the building.
-#define SENSOR_ID 1
+#define SENSOR_ID 3
 
-// Time delay between sensor readings (in milliseconds)
-#define SENSOR_PERIOD 5000
+// Time delay between sensor readings (in seconds)
+unsigned int sensor_period = 20;
+bool have_upload_period = false; // has the hardcoded value been uploaded from the coordinator?
 
 //DEFINE LIBRARIES
 #include <SoftwareSerial.h>
@@ -91,16 +92,30 @@ void setup() {
   digitalWrite(LEDpins[0], 0);
   digitalWrite(LEDpins[1], 0);
   digitalWrite(LEDpins[2], 0);
+  
+  // Just once, read the sensors on startup
+  readSensors();
 }
 
 void loop() {
   // Is it time to obtain new sensor data?
   static unsigned long last_sensor_read = 0;
   unsigned long current_time = millis();
-  if ((current_time - last_sensor_read) >= SENSOR_PERIOD) {
+  if ((current_time - last_sensor_read)/1000 >= sensor_period) {
     // Unsigned arithmetic automatically accounts for clock rollover
     readSensors();
     last_sensor_read = current_time;
+  }
+  
+  // Have we been told about the update period?
+  if ((!have_upload_period) && (nodeStatus == NodeOK)) {
+    static unsigned long last_request = 0;
+    if ((current_time - last_request) >= 5000) {
+      // SensorID,?
+      XBee.print(SENSOR_ID);
+      XBee.println(",?");
+      last_request = millis();
+    }
   }
   
   // Check that we're still in radio communication with the coordinator
@@ -169,7 +184,7 @@ void readButtons()
 {
   static unsigned long last_change = 0;
   unsigned long current_time = millis();
-  if ((current_time - last_change) < 1000) {
+  if (((current_time - last_change) < 2000) && (buttonStatus != NoButtons)) {
     // It has been too soon since the last change. Disallow this.
     return;
   }
@@ -226,18 +241,26 @@ void checkRadio()
   // The coordinator will send us periodic packets to indicate that we're still in radio contact.
   if (XBee.available()) {
     char msg = XBee.read();
-    Serial.print("Read from XBee: ");
-    Serial.println(msg);
-    if (msg == '1') {
-      // Character '1' indicates an OK status from the coordinator.
+    if (msg == 0x00) {
+      Serial.println("Coordinator reports failure to upload.");
+    } else if (msg == 0x01) {
+      Serial.println("Coordinator reports success.");      
+      // Byte 1 indicates an OK status from the coordinator.
       last_contact = millis();
       nodeStatus = NodeOK;
+    } else {
+      // Update how often we send messages
+      sensor_period = (unsigned int)msg;
+      Serial.print("New upload period ");
+      Serial.print(sensor_period);
+      Serial.println(" s");
+      have_upload_period = true;
     }
   }
 
   // Check how long it has been since last radio contact
   unsigned long current_time = millis();
-  if ((current_time - last_contact) > (SENSOR_PERIOD*2 + 2000)) {
+  if ((current_time - last_contact)/1000 > (sensor_period*2 + 2)) {
     // Unsigned arithmetic automatically accounts for clock rollover
     // More than n seconds have passed since last radio contact
     nodeStatus = LossOfRadioContact;
@@ -260,8 +283,22 @@ void updateStatusLED()
       }
       break;
     case NodeOK:
-      // Solid green LED
-      ledRGB(0, 40, 0);
+      // Display the button status on this LED
+      switch (buttonStatus) {
+        case HappyDown:
+          ledRGB(0, 255, 0); // Bright green
+          break;
+        case IndifferentDown:
+          ledRGB(128, 128, 48); // Whitish green
+          break;
+        case SadDown:
+          ledRGB(255, 0, 0); // Red
+          break;
+        case NoButtons:
+          ledRGB(0, 1, 0); // Very faint green
+          break;
+      }
+      
       break;
     case LossOfRadioContact:
       // Blinking red LED

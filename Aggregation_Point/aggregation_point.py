@@ -20,6 +20,12 @@ from xbee import ZigBee
 
 ######################################################################
 
+# Global settings
+
+UploadPeriod = bytes([40]) # Must be a single byte, > 1, < 256, units of seconds
+
+######################################################################
+
 class ParseError(Exception): pass
 
 class SensorData:
@@ -28,8 +34,9 @@ class SensorData:
     # There are (at present) 2 different types of messages that can be sent. We
     # detect which is which by using a restrictive regular expression.
     msg_formats = {
-        'sensor': re.compile('^(\d+),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?)$'),
-        'comfort': re.compile('^(\d+),(A|B|C)$')
+        'sensor': re.compile('^(\d+),(\d+(?:\.\d+)?),(\d+(?:\.\d+)?)$'), # temp and humidity data
+        'comfort': re.compile('^(\d+),(A|B|C)$'), # user comfort data
+        'upload_period': re.compile('^(\d+),\?$') # ask for the upload period to use
     }
     def __init__(self, raw_message):
         self.on_upload = None  # Callback to run when data is successfully uploaded
@@ -48,7 +55,8 @@ class SensorData:
 
     pp_formats = {
         'sensor': 'SensorID=%s\tTemperature=%s C\tHumidity=%s%%',
-        'comfort': 'SensorID=%s\tComfort=%s'
+        'comfort': 'SensorID=%s\tComfort=%s',
+        'upload_period': 'SensorID=%s is requesting the upload period'
     }
     def to_string(self):
         return self.pp_formats[self.type] % self.data
@@ -95,7 +103,9 @@ class ThingSpeakStore:
                     success = self._upload(sensorID, {'field1': temperature, 'field2': humidity});
                 elif d.type == 'comfort':
                     (sensorID, comfort) = d.data
-                    success = self._upload(sensorID, {'field3': self.comfort_mapping[comfort]})
+                    success = self._upload(sensorID + "Comfort", {'field1': self.comfort_mapping[comfort]})
+                elif d.type == 'comfort':
+                    success = true # immediately return, no data to upload to the Internet
 
                 if not success:
                     print("Warning: *** Discarded data because upload failed.")
@@ -157,6 +167,10 @@ class AggregationPoint:
         self.xbee_queue = Queue()
         self.xbee = ZigBee(self.serial, escaped=True, callback=self.xbee_queue.put)
 
+        # Maintain a list of XBee hardware addresses that we have seen (so that
+        # we can upload config information to new arrivals.)
+        self.address_list = set()
+
 
     # Execute the main loop
     def join(self):
@@ -205,14 +219,25 @@ class AggregationPoint:
             print(e, "(from node %s)" % hexlify(source_address).decode('utf-8').upper())
             return
 
+        # Is this a brand new sensor node?
+        if msg_source not in self.address_list:
+            self.send_upload_period(msg_source)
+            self.address_list.add(msg_source)
+
         # Print the data
         print(data.to_string())
 
-        # Register the on-upload callback
-        data.on_upload = lambda: self.send_acknowledgement(msg_source)
+        # Handle requests for the upload period specially
+        if data.type == 'upload_period':
+            self.send_upload_period(msg_source)
+        else:
+            # Data contains information to be uploaded
 
-        # Give to the data store
-        self.datastore.upload(data)
+            # Register the on_upload callback
+            data.on_upload = lambda: self.send_acknowledgement(msg_source)
+
+            # Give to the data store
+            self.datastore.upload(data)
 
     # Send an acknowledgment message to the sensor node when its data has been
     # successfully uploaded.
@@ -226,7 +251,20 @@ class AggregationPoint:
             'frame_id': b'\x00', # no response requested
             'dest_addr': b'\xFF\xFE', # use 64-bit addressing
             'dest_addr_long': destination_address,
-            'data': b'1' # ASCII '1' is the 'success' acknowledgement
+            'data': b'\x01' # Byte 01 is the success acknowledgement.
+        })
+
+    def send_upload_period(self, destination_address):
+        # This is run in a background thread! It cannot interact with the XBee
+        # hardware directly, and must use the xbee_queue to communicate with the
+        # main thread.
+
+        self.xbee_queue.put({
+            'id': 'tx',
+            'frame_id': b'\x00', # no response requested
+            'dest_addr': b'\xFF\xFE', # use 64-bit addressing
+            'dest_addr_long': destination_address,
+            'data': UploadPeriod # Must already be a single byte
         })
 
     # Cleanup
