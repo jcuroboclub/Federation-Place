@@ -77,7 +77,9 @@ App =
           dataMgr = new DataMgr
           dataMgr
             .setSource (callback) ->
-              TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d), 2000
+              TS.loadFeed sensor.properties.env_channel
+              , ((d) -> callback TS.toNv d)
+              , 2000
             .addSubscriber (data) ->
               # Add latest data to the sensor object
               sensor.properties.temperatures = (d.y for d in data[0].values)

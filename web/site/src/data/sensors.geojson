@@ -11,7 +11,8 @@
         "type": "sensor",
         "id": "6",
         "description": "3rd Floor Rear Kitchen",
-        "channel": "42699",
+        "env_channel": "42699",
+        "comf_channel": "43936",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -27,7 +28,8 @@
         "type": "sensor",
         "id": "7",
         "description": "3rd Floor Foyer",
-        "channel": "42700",
+        "env_channel": "42700",
+        "comf_channel": "43937",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -43,7 +45,8 @@
         "type": "sensor",
         "id": "13",
         "description": "Entrance Foyer Display",
-        "channel": "42706",
+        "env_channel": "42706",
+        "comf_channel": "43943",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -59,7 +62,8 @@
         "type": "sensor",
         "id": "3",
         "description": "1st Floor Foyer (GHD)",
-        "channel": "42696",
+        "env_channel": "42696",
+        "comf_channel": "43933",
         "temperatures": [],
         "humidities": [],
         "th_times": []
@@ -75,7 +79,8 @@
         "type": "sensor",
         "id": "11",
         "description": "2nd Floor Foyer (GHD)",
-        "channel": "42704",
+        "env_channel": "42704",
+        "comf_channel": "43941",
         "temperatures": [],
         "humidities": [],
         "th_times": []
