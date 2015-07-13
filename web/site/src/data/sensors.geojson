@@ -15,7 +15,9 @@
         "comf_channel": "43936",
         "temperatures": [],
         "humidities": [],
-        "th_times": []
+        "th_times": [],
+        "comfortabilities": [],
+        "comf_times": []
       }
     },
     {
@@ -32,7 +34,9 @@
         "comf_channel": "43937",
         "temperatures": [],
         "humidities": [],
-        "th_times": []
+        "th_times": [],
+        "comfortabilities": [],
+        "comf_times": []
       }
     },
     {
@@ -49,7 +53,9 @@
         "comf_channel": "43943",
         "temperatures": [],
         "humidities": [],
-        "th_times": []
+        "th_times": [],
+        "comfortabilities": [],
+        "comf_times": []
       }
     },
     {
@@ -66,7 +72,9 @@
         "comf_channel": "43933",
         "temperatures": [],
         "humidities": [],
-        "th_times": []
+        "th_times": [],
+        "comfortabilities": [],
+        "comf_times": []
       }
     },
     {
@@ -83,7 +91,9 @@
         "comf_channel": "43941",
         "temperatures": [],
         "humidities": [],
-        "th_times": []
+        "th_times": [],
+        "comfortabilities": [],
+        "comf_times": []
       }
     }
   ]
