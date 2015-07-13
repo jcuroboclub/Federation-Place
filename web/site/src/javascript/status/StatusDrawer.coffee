@@ -21,7 +21,7 @@ do -> Array::unique ?= ->
 do -> Array::filter ?= (callback) ->
   element for element in this when callback element
 do -> Array::sum ?= -> @reduce ((a, b) -> a + b), 0
-do -> Array::average ?= -> do @sum / @length
+do -> Array::average ?= -> if @length then do @sum / @length else 0
 
 
 # helper functions
