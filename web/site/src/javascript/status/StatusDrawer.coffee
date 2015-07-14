@@ -37,6 +37,10 @@ comfort_desc = (comf) ->
   return 'comfortable'        if 2.3 <  comf <  2.7
   return 'very comfortable'   if 2.7 <  comf <= 3
   return '<error>'
+omit_keys = (keys, obj) ->
+  new_obj = {}
+  new_obj[k] = v for k, v of obj when k not in keys
+  return new_obj
 
 
 StatusDrawer = class StatusDrawer
@@ -105,7 +109,7 @@ StatusDrawer = class StatusDrawer
       .setSource (callback) =>
         TS.loadFeed sensor.properties.comf_channel
         , ((d) -> callback TS.toNv d)
-        , @ts_params
+        , omit_keys TS.AGGREGATION_PARAMS, @ts_params # aggregation not necessary
 
   _bind_dataMgr_to_sensor: (sensor) ->
     if !@env_dataMgrs[id_of sensor]
