@@ -37,7 +37,19 @@ App =
           .style 'height', '80vh'
         parent = svg
 
-        window = new StatusDrawer svg, sensor_metadata
+        histories =
+          'day': {days: 1, average: 10}
+          'week': {days: 7, average: 60}
+          'month': {days: 31, average: 240}
+        get_history = -> histories[(d3.select '#history').property 'value']
+        history = do get_history
+        console.log history
+
+        window = new StatusDrawer svg, sensor_metadata, history
+        d3.select '#history'
+          .on 'change', ->
+            history = do get_history
+            window.update_history history
       .fail ->
         console.error "couldn't load map data: /data/sensors.geojson"
 
@@ -74,9 +86,9 @@ App =
             TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d)
           .addSubscriber (data) ->
             #console.log data
-            sensor.properties.temperatures = (d.y for d in data[0].values)
-            sensor.properties.humidities = (d.y for d in data[1].values)
-            sensor.properties.th_times = (d.x for d in data[0].values)
+            sensor.properties.temperatures = (d.y for d in data[0]?.values)
+            sensor.properties.humidities = (d.y for d in data[1]?.values)
+            sensor.properties.th_times = (d.x for d in data[0]?.values)
             #console.log sensor.properties
             plan.plotMap map_features
           .begin()

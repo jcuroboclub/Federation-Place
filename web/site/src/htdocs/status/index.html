@@ -9,10 +9,14 @@
   </head>
 
   <body>
-    <h1>Federation Place</h1>
-    <div id="content">
-      Human comfortability to environmental condition survey.
-    </div>
+    <h1>Status Overview</h1>
+    <aside>
+      <p>History: <select id="history">
+        <option value="day">Last day</option>
+        <option value="week">Last week</option>
+        <option value="month">Last month</option>
+      </select>
+    </aside>
     <div id="vis"><svg></svg></div>
     <script src="./index.js"></script>
   </body>

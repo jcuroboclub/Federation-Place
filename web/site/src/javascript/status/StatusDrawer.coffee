@@ -40,13 +40,12 @@ comfort_desc = (comf) ->
 
 
 StatusDrawer = class StatusDrawer
-  constructor: (@parent, sensor_metadata) ->
+  constructor: (@parent, sensor_metadata, @ts_params) ->
     @sensors = sensor_metadata.features
     @floors = do (floor_of s for s in @sensors).unique
     @sensors_by_floor =
       for f in @floors
-        @sensors.filter (s) ->
-          (floor_of s) == f
+        @sensors.filter (s) -> (floor_of s) == f
 
     @temp_charts = {}
     @hum_charts = {}
@@ -83,40 +82,51 @@ StatusDrawer = class StatusDrawer
         .text (d) -> "Floor #{d}"
         .attr "x", (floor) => (@floors.indexOf floor) * @node_h_spacing
 
+  update_history: (@ts_params) ->
+    for sensor in @sensors
+      @_update_source sensor
+      do @env_dataMgrs[id_of sensor].update
+      do @comf_dataMgrs[id_of sensor].update
+
+  _update_source: (sensor) ->
+    @env_dataMgrs[id_of sensor]
+      .setSource (callback) =>
+        TS.loadFeed sensor.properties.env_channel
+        , ((d) -> callback TS.toNv d)
+        , @ts_params
+    @comf_dataMgrs[id_of sensor]
+      .setSource (callback) =>
+        TS.loadFeed sensor.properties.comf_channel
+        , ((d) -> callback TS.toNv d)
+        , ''
+
   _bind_dataMgr_to_sensor: (sensor) ->
     if !@env_dataMgrs[id_of sensor]
       @env_dataMgrs[id_of sensor] = new DataMgr
-      @env_dataMgrs[id_of sensor]
-        .setSource (callback) ->
-          TS.loadFeed sensor.properties.env_channel
-          , ((d) -> callback TS.toNv d)
-          , n_samples
-        .addSubscriber (data) =>
+      @env_dataMgrs[id_of sensor].addSubscriber (data) =>
           @_bind_env_data_to_sensor sensor, data
           do @_draw_node_status
-      .begin()
 
     if !@comf_dataMgrs[id_of sensor]
       @comf_dataMgrs[id_of sensor] = new DataMgr
-      @comf_dataMgrs[id_of sensor]
-        .setSource (callback) ->
-          TS.loadFeed sensor.properties.comf_channel
-          , ((d) -> callback TS.toNv d)
-          , n_samples
-        .addSubscriber (data) =>
+      @comf_dataMgrs[id_of sensor].addSubscriber (data) =>
           @_bind_comf_data_to_sensor sensor, data
           do @_draw_node_status
-      .begin()
+
+    @_update_source sensor
+    do @env_dataMgrs[id_of sensor].begin
+    do @comf_dataMgrs[id_of sensor].begin
 
   _bind_env_data_to_sensor: (sensor, nvData) ->
-    sensor.properties.temperatures = (d.y for d in nvData[0].values)
-    sensor.properties.humidities = (d.y for d in nvData[1].values)
-    sensor.properties.th_times = (d.x for d in nvData[0].values)
+    console.log nvData
+    sensor.properties.temperatures = (d.y for d in nvData?[0].values)
+    sensor.properties.humidities = (d.y for d in nvData?[1].values)
+    sensor.properties.th_times = (d.x for d in nvData?[0].values)
     sensor.properties.env_nvData = nvData
 
   _bind_comf_data_to_sensor: (sensor, nvData) ->
-    sensor.properties.comfortabilities = (d.y for d in nvData[0].values)
-    sensor.properties.comf_times = (d.x for d in nvData[0].values)
+    sensor.properties.comfortabilities = (d.y for d in nvData?[0].values)
+    sensor.properties.comf_times = (d.x for d in nvData?[0].values)
     sensor.properties.comf_nvData = nvData
 
   _draw_node_status: ->
@@ -137,11 +147,11 @@ StatusDrawer = class StatusDrawer
       .attr 'dy', '1em'
     @sensor_sel.select '.status'
       .each (d) ->
+        av_temp = do d.properties.temperatures.last
         text = "[#{id_of d}]: #{d.properties.description}\n
-        #{do d.properties.temperatures.last}ºC,
-        #{do d.properties.humidities.last}% humidity,
+        #{(do d.properties.temperatures.last)?.toFixed 2}ºC,
+        #{(do d.properties.humidities.last)?.toFixed 2}% humidity,
         #{comfort_desc (do d.properties.comfortabilities.average)}"
-        console.log do d.properties.comfortabilities.average
         lines = text.split /\n/
         tspan = (d3.select @).selectAll 'tspan'
           .data lines
