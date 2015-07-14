@@ -52,11 +52,17 @@ StatusDrawer = class StatusDrawer
     @env_dataMgrs = {}
     @comf_dataMgrs = {}
 
-    do @.fit_tiling
-    do @.draw_floor_titles
-    @_bind_dataMgr_to_sensor sensor for sensor in @sensors
+    do do @redraw
 
-  fit_tiling: ->
+  # NOTE: returns a closure
+  redraw: ->
+    context = @
+    return ->
+      do context._fit_tiling
+      do context._draw_floor_titles
+      context._bind_dataMgr_to_sensor sensor for sensor in context.sensors
+
+  _fit_tiling: ->
     # sizing for each node
     @node_h_spacing = (svg_px_width @parent) / @floors.length
     most_sensors_per_floor = Math.max (s.length for s in @sensors_by_floor)...
@@ -72,15 +78,16 @@ StatusDrawer = class StatusDrawer
     @node_width = @node_h_spacing - node_h_margin
     @node_height = @node_v_spacing - node_v_margin
 
-  draw_floor_titles: ->
-    @parent.selectAll '.floor_title'
-        .data @floors
-      .enter()
-        .append 'text'
-        .attr 'class', 'floor_title'
-        .attr 'dy', '1em'
-        .text (d) -> "Floor #{d}"
-        .attr "x", (floor) => (@floors.indexOf floor) * @node_h_spacing
+  _draw_floor_titles: ->
+    sel = @parent.selectAll '.floor_title'
+      .data @floors
+    sel.enter()
+      .append 'text'
+      .attr 'class', 'floor_title'
+      .attr 'dy', '1em'
+    sel
+      .text (d) -> "Floor #{d}"
+      .attr "x", (floor) => (@floors.indexOf floor) * @node_h_spacing
 
   update_history: (@ts_params) ->
     for sensor in @sensors
@@ -98,7 +105,7 @@ StatusDrawer = class StatusDrawer
       .setSource (callback) =>
         TS.loadFeed sensor.properties.comf_channel
         , ((d) -> callback TS.toNv d)
-        , ''
+        , @ts_params
 
   _bind_dataMgr_to_sensor: (sensor) ->
     if !@env_dataMgrs[id_of sensor]
@@ -118,7 +125,6 @@ StatusDrawer = class StatusDrawer
     do @comf_dataMgrs[id_of sensor].begin
 
   _bind_env_data_to_sensor: (sensor, nvData) ->
-    console.log nvData
     sensor.properties.temperatures = (d.y for d in nvData?[0].values)
     sensor.properties.humidities = (d.y for d in nvData?[1].values)
     sensor.properties.th_times = (d.x for d in nvData?[0].values)
@@ -136,6 +142,7 @@ StatusDrawer = class StatusDrawer
     @sensor_enter = @sensor_sel.enter()
       .append 'g'
       .attr 'class', 'sensor'
+    @sensor_sel
       .attr "transform", (d) =>
         "translate(#{(@floors.indexOf floor_of d) * @node_h_spacing},
         #{floor_title_height + @node_v_spacing *
@@ -151,7 +158,8 @@ StatusDrawer = class StatusDrawer
         text = "[#{id_of d}]: #{d.properties.description}\n
         #{(do d.properties.temperatures.last)?.toFixed 2}ºC,
         #{(do d.properties.humidities.last)?.toFixed 2}% humidity,
-        #{comfort_desc (do d.properties.comfortabilities.average)}"
+        #{comfort_desc (
+          do (d.properties.comfortabilities.filter (x) -> x).average)}"
         lines = text.split /\n/
         tspan = (d3.select @).selectAll 'tspan'
           .data lines
@@ -172,8 +180,10 @@ StatusDrawer = class StatusDrawer
     translation = "translate(#{index * @node_width / 2},#{@text_height+20})"
     @sensor_enter.append 'text'
       .attr 'class', 'mini_chart_title'
+      .attr 'id', chart_class + '_title'
       .text title
       .attr 'dy', -8
+    @sensor_sel.select '#' + chart_class + '_title'
       .attr 'x', @node_width / 4
       .attr "transform", translation
     @sensor_enter.append 'g'

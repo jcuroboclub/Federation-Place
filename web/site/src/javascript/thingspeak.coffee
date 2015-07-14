@@ -34,4 +34,6 @@ exports.loadFeed = (channel, callback, parameters) ->
     param_string = '?' + ("#{k}=#{v}" for k, v of parameters).join '&'
   else
     param_string = ''
-  $.getJSON TS_URL + "channels/#{channel}/feed.json#{param_string}", callback
+  $.getJSON TS_URL + "channels/#{channel}/feed.json#{param_string}", (d) ->
+    console.log d
+    callback d

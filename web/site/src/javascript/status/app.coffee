@@ -18,6 +18,22 @@ do -> Array::unique ?= ->
   value for key, value of output
 do -> Array::filter ?= (callback) ->
   element for element in this when callback element
+do -> Function::debounce ?= (threshold=100, execAsap=true) ->
+  fn = @
+  console.log @
+  timeout = undefined
+  debounced = ->
+    delayed = ->
+      fn.apply obj, args  unless execAsap
+      timeout = null
+      return
+    obj = @
+    args = arguments
+    if timeout
+      clearTimeout timeout
+    else func.apply obj, args if execAsap
+    timeout = setTimeout(delayed, threshold)
+    return
 
 # inline debugger
 addDebug = (fn) -> (d...) ->
@@ -43,13 +59,13 @@ App =
           'month': {days: 31, average: 240}
         get_history = -> histories[(d3.select '#history').property 'value']
         history = do get_history
-        console.log history
 
-        window = new StatusDrawer svg, sensor_metadata, history
+        disp_window = new StatusDrawer svg, sensor_metadata, history
         d3.select '#history'
           .on 'change', ->
             history = do get_history
-            window.update_history history
+            disp_window.update_history history
+        $(window).resize (do disp_window.redraw).debounce 500, false
       .fail ->
         console.error "couldn't load map data: /data/sensors.geojson"
 
