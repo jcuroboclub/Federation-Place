@@ -5,7 +5,7 @@ LineChart = require('../NvWrapper').LineChart
 
 
 # constants/magic numbers
-floor_title_height = 40 # height of the floor title
+floor_title_height = 30 # height of the floor title
 node_w_h_ratio = 3 # desired aspect ratio (width:height) of each node
 node_h_margin = 20 # horizontal margin between nodes
 node_v_margin = 40 # vertical margin between nodes
@@ -144,7 +144,7 @@ StatusDrawer = class StatusDrawer
     # Textual current data for each sensor
     @sensor_enter.append 'text'
       .attr 'class', 'status'
-      .attr 'dy', '1em'
+      #.attr 'dy', '1em'
     @sensor_sel.select '.status'
       .each (d) ->
         av_temp = do d.properties.temperatures.last
@@ -163,24 +163,30 @@ StatusDrawer = class StatusDrawer
     @text_height = svg_px_height @sensor_sel.select '.status'
 
     # Temperature history plot
-    @_plot_mini_chart 'temp_history', @temp_charts, 0
+    @_plot_mini_chart 'temp_history', @temp_charts, 0, 'Temperature'
 
     # Humidity history plot
-    @_plot_mini_chart 'hum_history', @hum_charts, 1
+    @_plot_mini_chart 'hum_history', @hum_charts, 1, 'Humidity'
 
-  _plot_mini_chart: (chart_class, chart_dict, index) ->
+  _plot_mini_chart: (chart_class, chart_dict, index, title='') ->
+    translation = "translate(#{index * @node_width / 2},#{@text_height+20})"
+    @sensor_enter.append 'text'
+      .attr 'class', 'mini_chart_title'
+      .text title
+      .attr 'dy', -8
+      .attr 'x', @node_width / 4
+      .attr "transform", translation
     @sensor_enter.append 'g'
       .attr 'class', chart_class
       .each (d) ->
         chart = new LineChart d3.select @
         chart.chart
-          .margin {bottom: 0, right: 30}
+          .margin {left: 35, top: 5, bottom: 0, right: 35}
           .showLegend? false
           .useInteractiveGuideline? false
         chart_dict[id_of d] = chart
     @sensor_sel.select '.' + chart_class
-      .attr "transform",
-        "translate(#{index * @node_width / 2},#{@text_height})"
+      .attr "transform", translation
       .each (d) =>
         chart = chart_dict[id_of d]
         chart.chart

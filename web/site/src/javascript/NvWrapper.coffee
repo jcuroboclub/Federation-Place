@@ -14,7 +14,7 @@ exports.LineChart = class LineChart
       .tickFormat (d) ->
         (d3.time.format '%I:%M %p') new Date d
     chart.yAxis
-      .axisLabel 'Temp (C)'
+    #  .axisLabel 'Temp (C)'
       .tickFormat d3.format '.2f'
     # chart.color (d) -> getColor d.key
     nv.utils.windowResize(chart.update)
@@ -23,7 +23,7 @@ exports.LineChart = class LineChart
   updateChart: (data) =>
     if !data?[0]
       return
-    @chart.yAxis.axisLabel data[0].key
+    #@chart.yAxis.axisLabel data[0].key
     (if typeof @target is 'string' then d3.select(@target) else @target)
       .datum data
       .call @chart
