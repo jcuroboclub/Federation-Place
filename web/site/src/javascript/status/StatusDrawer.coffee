@@ -15,14 +15,24 @@ comfort_plot_height = 2 * __.svg_px_size (d3.select 'body'), 'font-size'
 n_samples = 1000 # no. samples to download from ThingSpeak
 
 
+emotify_comf = (comf) ->
+  return '😶'               if not comf
+  return '😫' if 1   <= comf <  1.3
+  return '😒'      if 1.3 <  comf <  1.7
+  return '😐'         if 1.7 <  comf <  2.3
+  return '😉'        if 2.3 <  comf <  2.7
+  return '😄'   if 2.7 <  comf <= 3
+  return '😡'
 comfort_rating_to_desc = (comf) ->
-  return 'unrated'               if not comf
-  return 'very uncomfortable 😫' if 1   <= comf <  1.3
-  return 'uncomfortable 😒'      if 1.3 <  comf <  1.7
-  return 'indecisive 😐'         if 1.7 <  comf <  2.3
-  return 'comfortable 😏'        if 2.3 <  comf <  2.7
-  return 'very comfortable 😄'   if 2.7 <  comf <= 3
-  return '<error>'
+  text = do ->
+    return 'unrated'               if not comf
+    return 'very uncomfortable' if 1   <= comf <  1.3
+    return 'uncomfortable'      if 1.3 <  comf <  1.7
+    return 'indecisive'         if 1.7 <  comf <  2.3
+    return 'comfortable'        if 2.3 <  comf <  2.7
+    return 'very comfortable'   if 2.7 <  comf <= 3
+    return '<error>'
+  return text + ' ' + emotify_comf comf
 
 StatusDrawer = class StatusDrawer
   constructor: (@parent, sensor_metadata, @ts_params) ->
@@ -230,10 +240,12 @@ StatusDrawer = class StatusDrawer
         plot_sel.enter()
           .append 'text'
           .attr 'class', 'point'
-          .attr 'y', comfort_plot_height
+          #.style 'font-size', '16'
+          .style 'text-anchor', 'middle'
         plot_sel
           .attr 'x', (d) -> x d.x
-          .text (d) -> d.y
+          .attr 'y', (d)-> comfort_plot_height - d.y / 3 * node_internal_margin
+          .text (d) -> emotify_comf d.y
         plot_sel.exit().remove()
 
 module.exports = StatusDrawer
