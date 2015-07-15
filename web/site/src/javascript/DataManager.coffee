@@ -1,4 +1,5 @@
 # Created by AshGillman 23/4/15
+default_reload_time = 60*60*1000 # ms
 
 exports.DataManager = class DataManager
   # source: callable, returns data in nvd3 format
@@ -6,7 +7,7 @@ exports.DataManager = class DataManager
     @data = [key: "", values: [x: 0, y: new Date]] # nvd3 format
     @_subscribers = []
     @source = (callback) -> callback []
-    @interval = 15000
+    @interval = default_reload_time
 
   # Subscriber are expected to be callables with single data argument
   addSubscriber: (subscriber) ->
@@ -25,7 +26,7 @@ exports.DataManager = class DataManager
     subscriber @data for subscriber in @_subscribers
 
   # Callback on data update: notifies subscribers if data is new.
-  update: (newdata) =>
+  on_update: (newdata) =>
     if not newdata[0] or not newdata[0].values
       console.log "Can't interpret data - did you convert to NV?", newdata
       return
@@ -36,8 +37,11 @@ exports.DataManager = class DataManager
       do @_notifyAll
 
   begin: ->
-    @source @update
-    @pid = setInterval (=> @source @update), @interval
+    do @update
+    @pid = setInterval @update, @interval
+
+  update: =>
+    @source @on_update
 
   end: ->
     clearInterval @pid

@@ -1,4 +1,5 @@
 # Created by AshGillman, 19/5/15
+require '../helpers'
 TS = require '../thingspeak'
 D3P = require '../D3Plotter.coffee'
 LineChart = require('../NvWrapper').LineChart
@@ -10,23 +11,6 @@ $ = require 'jquery'
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
 
-# Prototype updaters
-do -> Array::last ?= -> @[@length - 1]
-do -> Array::unique ?= ->
-  output = {}
-  output[@[key]] = @[key] for key in [0...@length]
-  value for key, value of output
-do -> Array::filter ?= (callback) ->
-  element for element in this when callback element
-
-# inline debugger
-addDebug = (fn) -> (d...) ->
-  console.log fn, d
-  fn d...
-
-# helper functions
-floor_of = (sensor) -> sensor.geometry.coordinates[2]
-
 App =
   start: ->
     do App.display_overview
@@ -37,7 +21,19 @@ App =
           .style 'height', '80vh'
         parent = svg
 
-        window = new StatusDrawer svg, sensor_metadata
+        histories =
+          'day': {days: 1, average: 10}
+          'week': {days: 7, average: 60}
+          'month': {days: 31, average: 240}
+        get_history = -> histories[(d3.select '#history').property 'value']
+        history = do get_history
+
+        disp_window = new StatusDrawer svg, sensor_metadata, history
+        d3.select '#history'
+          .on 'change', ->
+            history = do get_history
+            disp_window.update_history history
+        $(window).resize (do disp_window.redraw).debounce 500, false
       .fail ->
         console.error "couldn't load map data: /data/sensors.geojson"
 
@@ -74,9 +70,9 @@ App =
             TS.loadFeed sensor.properties.channel, ((d) -> callback TS.toNv d)
           .addSubscriber (data) ->
             #console.log data
-            sensor.properties.temperatures = (d.y for d in data[0].values)
-            sensor.properties.humidities = (d.y for d in data[1].values)
-            sensor.properties.th_times = (d.x for d in data[0].values)
+            sensor.properties.temperatures = (d.y for d in data[0]?.values)
+            sensor.properties.humidities = (d.y for d in data[1]?.values)
+            sensor.properties.th_times = (d.x for d in data[0]?.values)
             #console.log sensor.properties
             plan.plotMap map_features
           .begin()
