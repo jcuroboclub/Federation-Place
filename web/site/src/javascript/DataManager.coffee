@@ -1,4 +1,5 @@
 # Created by AshGillman 23/4/15
+default_reload_time = 60*60*1000 # ms
 
 exports.DataManager = class DataManager
   # source: callable, returns data in nvd3 format
@@ -6,7 +7,7 @@ exports.DataManager = class DataManager
     @data = [key: "", values: [x: 0, y: new Date]] # nvd3 format
     @_subscribers = []
     @source = (callback) -> callback []
-    @interval = 15000
+    @interval = default_reload_time
 
   # Subscriber are expected to be callables with single data argument
   addSubscriber: (subscriber) ->

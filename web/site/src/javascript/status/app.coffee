@@ -1,4 +1,5 @@
 # Created by AshGillman, 19/5/15
+require '../helpers'
 TS = require '../thingspeak'
 D3P = require '../D3Plotter.coffee'
 LineChart = require('../NvWrapper').LineChart
@@ -9,39 +10,6 @@ $ = require 'jquery'
 
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
-
-# Prototype updaters
-do -> Array::last ?= -> @[@length - 1]
-do -> Array::unique ?= ->
-  output = {}
-  output[@[key]] = @[key] for key in [0...@length]
-  value for key, value of output
-do -> Array::filter ?= (callback) ->
-  element for element in this when callback element
-do -> Function::debounce ?= (threshold=100, execAsap=true) ->
-  fn = @
-  console.log @
-  timeout = undefined
-  debounced = ->
-    delayed = ->
-      fn.apply obj, args  unless execAsap
-      timeout = null
-      return
-    obj = @
-    args = arguments
-    if timeout
-      clearTimeout timeout
-    else func.apply obj, args if execAsap
-    timeout = setTimeout(delayed, threshold)
-    return
-
-# inline debugger
-addDebug = (fn) -> (d...) ->
-  console.log fn, d
-  fn d...
-
-# helper functions
-floor_of = (sensor) -> sensor.geometry.coordinates[2]
 
 App =
   start: ->
