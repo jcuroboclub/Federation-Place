@@ -13,6 +13,15 @@ node_v_margin = 40 # vertical margin between nodes
 n_samples = 1000 # no. samples to download from ThingSpeak
 
 
+comfort_rating_to_desc = (comf) ->
+  return 'unrated'            if not comf
+  return 'very uncomfortable 😫' if 1   <= comf <  1.3
+  return 'uncomfortable 😒'      if 1.3 <  comf <  1.7
+  return 'indecisive 😐'         if 1.7 <  comf <  2.3
+  return 'comfortable 😏'        if 2.3 <  comf <  2.7
+  return 'very comfortable 😄'   if 2.7 <  comf <= 3
+  return '<error>'
+
 StatusDrawer = class StatusDrawer
   constructor: (@parent, sensor_metadata, @ts_params) ->
     @sensors = sensor_metadata.features
@@ -132,7 +141,7 @@ StatusDrawer = class StatusDrawer
         text = "[#{__.id_of d}]: #{d.properties.description}\n
         #{(do d.properties.temperatures.last)?.toFixed 2}ºC,
         #{(do d.properties.humidities.last)?.toFixed 2}% humidity,
-        #{__.comfort_rating_to_desc (
+        #{comfort_rating_to_desc (
           do (d.properties.comfortabilities.filter (x) -> x).average)}"
         lines = text.split /\n/
         tspan = (d3.select @).selectAll 'tspan'

@@ -41,14 +41,6 @@ exports.floor_of = (sensor) -> sensor.geometry.coordinates[2]
 exports.id_of = (sensor) -> sensor.properties.id
 exports.svg_px_width = (el) -> +(el.style 'width')[0..-3]
 exports.svg_px_height = (el) -> +(el.style 'height')[0..-3]
-exports.comfort_rating_to_desc = (comf) ->
-  return 'unrated'            if not comf
-  return 'very uncomfortable' if 1   <= comf <  1.3
-  return 'uncomfortable'      if 1.3 <  comf <  1.7
-  return 'indecisive'         if 1.7 <  comf <  2.3
-  return 'comfortable'        if 2.3 <  comf <  2.7
-  return 'very comfortable'   if 2.7 <  comf <= 3
-  return '<error>'
 exports.omit_keys = (keys, obj) ->
   new_obj = {}
   new_obj[k] = v for k, v of obj when k not in keys
