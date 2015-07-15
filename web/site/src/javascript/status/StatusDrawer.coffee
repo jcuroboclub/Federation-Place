@@ -7,14 +7,16 @@ LineChart = require('../NvWrapper').LineChart
 
 # constants/magic numbers
 floor_title_height = 30 # height of the floor title
-node_w_h_ratio = 3 # desired aspect ratio (width:height) of each node
+node_w_h_ratio = 2 # desired aspect ratio (width:height) of each node
 node_h_margin = 20 # horizontal margin between nodes
 node_v_margin = 40 # vertical margin between nodes
+node_internal_margin = 10 # margin inside node between elements
+comfort_plot_height = 2 * __.svg_px_size (d3.select 'body'), 'font-size'
 n_samples = 1000 # no. samples to download from ThingSpeak
 
 
 comfort_rating_to_desc = (comf) ->
-  return 'unrated'            if not comf
+  return 'unrated'               if not comf
   return 'very uncomfortable 😫' if 1   <= comf <  1.3
   return 'uncomfortable 😒'      if 1.3 <  comf <  1.7
   return 'indecisive 😐'         if 1.7 <  comf <  2.3
@@ -151,7 +153,8 @@ StatusDrawer = class StatusDrawer
           .attr 'x', 0
           .attr 'dy', '1.1em'
         tspan.text (d) -> d
-    @text_height = __.svg_px_height @sensor_sel.select '.status'
+    @text_height = (__.svg_px_height @sensor_sel.select '.status') +
+        __.svg_px_size (@sensor_sel.select '.status'), 'font-size'
 
     # Temperature history plot
     @_plot_mini_chart 'temp_history', @temp_charts, 0, 'Temperature'
@@ -159,15 +162,21 @@ StatusDrawer = class StatusDrawer
     # Humidity history plot
     @_plot_mini_chart 'hum_history', @hum_charts, 1, 'Humidity'
 
+    do @_plot_comf_hist
+
   _plot_mini_chart: (chart_class, chart_dict, index, title='') ->
-    translation = "translate(#{index * @node_width / 2},#{@text_height+20})"
+    translation = "translate(#{index * @node_width / 2},
+    #{@text_height + node_internal_margin})"
+    width = @node_width / 2
+    height = @node_height - @text_height - comfort_plot_height -
+        2 * node_internal_margin
     @sensor_enter.append 'text'
       .attr 'class', 'mini_chart_title'
       .attr 'id', chart_class + '_title'
       .text title
       .attr 'dy', -8
     @sensor_sel.select '#' + chart_class + '_title'
-      .attr 'x', @node_width / 4
+      .attr 'x', width / 2
       .attr "transform", translation
     @sensor_enter.append 'g'
       .attr 'class', chart_class
@@ -183,9 +192,48 @@ StatusDrawer = class StatusDrawer
       .each (d) =>
         chart = chart_dict[__.id_of d]
         chart.chart
-          .width @node_width / 2
-          .height @node_height - @text_height - 5
+          .width width
+          .height height
         chart.updateChart [d.properties.env_nvData?[index]]
 
+  _plot_comf_hist: ->
+    [width, height] = [@node_width, comfort_plot_height]
+    y = @node_height - comfort_plot_height
+    #data = @sensor.properties.comf_nvData.values
+    [get_x, get_y] = [((d) -> d.x), ((d) -> d.y)]
+    history_limit = new Date
+    history_limit.setDate history_limit.getDate() - @ts_params.days
+    x = d3.time.scale()
+      .range [0, width]
+      .domain [history_limit, new Date]
+    xAxis = d3.svg.axis()
+      .scale x
+      .orient 'bottom'
+
+    plot_class = 'comf_history_chart'
+    @sensor_enter.append 'g'
+        .attr 'class', plot_class + ' nvd3'
+        .attr 'transform', "translate(0, #{y})"
+      .append 'g'
+        .attr 'class', 'x axis'
+        .attr 'transform', "translate(0, #{height})"
+        .call xAxis
+
+    @sensor_sel.selectAll '.' + plot_class
+      .each (d) ->
+        d.properties.comf_nvData ?= [{}]
+        d.properties.comf_nvData?[0].values ?= []
+        console.log d.properties.comf_nvData?[0].values
+        plot_sel = d3.select @
+          .selectAll '.point'
+          .data d.properties.comf_nvData[0].values
+        plot_sel.enter()
+          .append 'text'
+          .attr 'class', 'point'
+          .attr 'y', comfort_plot_height
+        plot_sel
+          .attr 'x', (d) -> x d.x
+          .text (d) -> d.y
+        plot_sel.exit().remove()
 
 module.exports = StatusDrawer
