@@ -45,7 +45,7 @@ loadFeed = (channel, callback, parameters, recursive=true, last_data=null) ->
   $.getJSON TS_URL + "channels/#{channel}/feed.json#{param_string}", (d) ->
     # merge last request, if existing
     keep_downloading = d.feeds?.length > 1
-    d.feeds?.push last_data.feeds... if last_data
+    d.feeds?.push last_data.feeds[1..]... if last_data
     # if required, download further data
     if recursive and keep_downloading
       parameters.end = d.feeds[0].created_at

@@ -23,7 +23,14 @@ exports.LineChart = class LineChart
   updateChart: (data) =>
     if !data?[0]
       return
-    #@chart.yAxis.axisLabel data[0].key
+    domain_in_days = do (oneDay = 24*60*60*1000) ->
+      Math.abs (data[0].values.last()?.x - data[0].values?[0]?.x) / oneDay
+    format = do ->
+      return '%I:%M %p' if domain_in_days < 2
+      return '%a'       if domain_in_days < 8
+      return '%e %b'
+    @chart.xAxis.tickFormat (d) -> (d3.time.format format) new Date d
+    @chart.yAxis.axisLabel data[0].key
     (if typeof @target is 'string' then d3.select(@target) else @target)
       .datum data
       .call @chart
