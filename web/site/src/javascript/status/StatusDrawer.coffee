@@ -219,6 +219,19 @@ StatusDrawer = class StatusDrawer
     xAxis = d3.svg.axis()
       .scale x
       .orient 'bottom'
+    do =>
+      domain_in_days = @ts_params.days
+      format = do ->
+        return '%I:%M %p' if domain_in_days < 2
+        return '%a'       if domain_in_days < 8
+        return '%e %b'
+      ticks = do ->
+        return 4 if domain_in_days < 2
+        return 8 if domain_in_days < 8
+        return 6
+      xAxis
+        .tickFormat (d) -> (d3.time.format format) new Date d
+        .ticks ticks
 
     plot_class = 'comf_history_chart'
     @sensor_enter.append 'g'
@@ -227,13 +240,13 @@ StatusDrawer = class StatusDrawer
       .append 'g'
         .attr 'class', 'x axis'
         .attr 'transform', "translate(0, #{height})"
-        .call xAxis
+    @sensor_sel.select '.x.axis'
+      .call xAxis
 
     @sensor_sel.selectAll '.' + plot_class
       .each (d) ->
         d.properties.comf_nvData ?= [{}]
         d.properties.comf_nvData?[0].values ?= []
-        console.log d.properties.comf_nvData?[0].values
         plot_sel = d3.select @
           .selectAll '.point'
           .data d.properties.comf_nvData[0].values
