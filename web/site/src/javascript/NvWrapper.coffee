@@ -10,11 +10,11 @@ exports.LineChart = class LineChart
     chart = nv.models.lineChart()
     chart.useInteractiveGuideline?(true)
     chart.xAxis
-      #.axisLabel 'Time'
+      .axisLabel ''
       .tickFormat (d) ->
         (d3.time.format '%I:%M %p') new Date d
     chart.yAxis
-    #  .axisLabel 'Temp (C)'
+      .axisLabel ''
       .tickFormat d3.format '.2f'
     # chart.color (d) -> getColor d.key
     nv.utils.windowResize(chart.update)
@@ -30,7 +30,7 @@ exports.LineChart = class LineChart
       return '%a'       if domain_in_days < 8
       return '%e %b'
     @chart.xAxis.tickFormat (d) -> (d3.time.format format) new Date d
-    @chart.yAxis.axisLabel data[0].key
+    #@chart.yAxis.axisLabel data[0].key
     (if typeof @target is 'string' then d3.select(@target) else @target)
       .datum data
       .call @chart
