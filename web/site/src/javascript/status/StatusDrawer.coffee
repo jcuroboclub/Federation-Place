@@ -236,12 +236,13 @@ StatusDrawer = class StatusDrawer
     plot_class = 'comf_history_chart'
     @sensor_enter.append 'g'
         .attr 'class', plot_class + ' nvd3'
-        .attr 'transform', "translate(0, #{y})"
       .append 'g'
         .attr 'class', 'x axis'
-        .attr 'transform', "translate(0, #{height})"
+    @sensor_sel.select '.' + plot_class + '.nvd3'
+      .attr 'transform', "translate(0, #{y})"
     @sensor_sel.select '.x.axis'
       .call xAxis
+      .attr 'transform', "translate(0, #{height})"
 
     @sensor_sel.selectAll '.' + plot_class
       .each (d) ->
