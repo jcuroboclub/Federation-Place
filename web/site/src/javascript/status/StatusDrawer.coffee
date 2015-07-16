@@ -199,7 +199,7 @@ StatusDrawer = class StatusDrawer
         chart_dict[__.id_of d] = chart
     @sensor_sel.select '.' + chart_class
       .attr "transform", translation
-      .each (d) =>
+      .each (d) ->
         chart = chart_dict[__.id_of d]
         chart.chart
           .width width
