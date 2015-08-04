@@ -16,16 +16,16 @@ n_samples = 1000 # no. samples to download from ThingSpeak
 
 
 emotify_comf = (comf) ->
-  return '😶'               if not comf
+  return '😶' if not comf
   return '😫' if 1   <= comf <  1.3
-  return '😒'      if 1.3 <  comf <  1.7
-  return '😐'         if 1.7 <  comf <  2.3
-  return '😉'        if 2.3 <  comf <  2.7
-  return '😄'   if 2.7 <  comf <= 3
+  return '😒' if 1.3 <  comf <  1.7
+  return '😐' if 1.7 <  comf <  2.3
+  return '😉' if 2.3 <  comf <  2.7
+  return '😄' if 2.7 <  comf <= 3
   return '😡'
 comfort_rating_to_desc = (comf) ->
   text = do ->
-    return 'unrated'               if not comf
+    return 'unrated'            if not comf
     return 'very uncomfortable' if 1   <= comf <  1.3
     return 'uncomfortable'      if 1.3 <  comf <  1.7
     return 'indecisive'         if 1.7 <  comf <  2.3
