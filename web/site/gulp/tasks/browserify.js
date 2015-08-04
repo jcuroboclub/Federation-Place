@@ -18,6 +18,7 @@ var handleErrors = require('../util/handleErrors');
 var source       = require('vinyl-source-stream');
 var config       = require('../config').browserify;
 var _            = require('lodash');
+var mold         = require('mold-source-map');
 
 var browserifyTask = function(devMode) {
 
@@ -40,6 +41,9 @@ var browserifyTask = function(devMode) {
 
       return b
         .bundle()
+        // source maps for firefox
+        // https://github.com/substack/node-browserify/issues/681
+        .pipe(mold.transformSourcesRelativeTo(__dirname))
         // Report compile errors
         .on('error', handleErrors)
         // Use vinyl-source-stream to make the
