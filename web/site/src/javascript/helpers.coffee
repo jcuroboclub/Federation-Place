@@ -39,10 +39,17 @@ do -> Function::debounce ?= (threshold=100, execAsap=true) ->
 
 exports.floor_of = (sensor) -> sensor.geometry.coordinates[2]
 exports.id_of = (sensor) -> sensor.properties.id
-svg_px_size = (el, attr) -> +(el.style attr)[0..-3]
-exports.svg_px_size = svg_px_size
-exports.svg_px_width = (el) -> svg_px_size el, 'width'
-exports.svg_px_height = (el) -> svg_px_size el, 'height'
+svg_px_size_by_style = (el, attr) ->
+  size = +(el.style attr)[0..-3]
+  if size then size else 0
+svg_px_size_by_bbox = (el, attr) -> el.node().getBBox()[attr]
+exports.svg_px_size = svg_px_size_by_style
+exports.svg_px_width = (el) ->
+  size_by_style = svg_px_size_by_style el, 'width'
+  if size_by_style then size_by_style else svg_px_size_by_bbox el, 'width'
+exports.svg_px_height = (el) ->
+  size_by_style = svg_px_size_by_style el, 'height'
+  if size_by_style then size_by_style else svg_px_size_by_bbox el, 'height'
 exports.omit_keys = (keys, obj) ->
   new_obj = {}
   new_obj[k] = v for k, v of obj when k not in keys
