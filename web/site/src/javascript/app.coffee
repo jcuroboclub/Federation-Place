@@ -1,12 +1,13 @@
 # Created by AshGillman, 19/5/15
-__           = require './helpers'
-TS           = require './thingspeak'
+__            = require './helpers'
+TS            = require './thingspeak'
 #D3P          = require './D3Plotter.coffee'
 #LineChart    = require('./NvWrapper').LineChart
 #DataMgr      = require('./DataManager').DataManager
 #FloorPlan    = require('./FloorPlan').FloorPlan
-StatusDrawer = require('./status/StatusDrawer')
-$            = require 'jquery'
+StatusDrawer  = require('./status/StatusDrawer')
+ScatterDrawer = require('./scatter/ScatterDrawer')
+$             = require 'jquery'
 
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
@@ -14,13 +15,14 @@ anchorId = 'vis'
 App =
   start: (arg) ->
     task = do ->
-      return App.display_overview if arg == 'status'
+      return App.display_status  if arg == 'status'
+      return App.display_scatter if arg == 'scatter'
       return App.default_task
     svg = d3.select '#vis svg'
       .style 'height', '80vh'
     task svg
 
-  display_overview: (parent) ->
+  display_status: (parent) ->
     $.getJSON '../data/sensors.geojson', (sensor_metadata) ->
         histories =
           'day':   {days: 1,  average: 10}
@@ -35,6 +37,12 @@ App =
             history = do get_history
             disp_window.update_history history
         $(window).resize (do disp_window.redraw).debounce 500, false
+      .fail ->
+        console.error "couldn't load map data: /data/sensors.geojson"
+
+  display_scatter: (parent) ->
+    $.getJSON '../data/sensors.geojson', (sensor_metadata) ->
+        disp_window = new ScatterDrawer parent, sensor_metadata
       .fail ->
         console.error "couldn't load map data: /data/sensors.geojson"
 
