@@ -62,16 +62,24 @@ DrawerBase = class StatusDrawer
     do @comf_dataMgrs[__.id_of sensor].begin
 
   _bind_env_data_to_sensor: (sensor, nvData) ->
+    nvData = @_filter_nvData(nvData)
     sensor.properties.temperatures = (d.y for d in nvData?[0].values)
     sensor.properties.humidities   = (d.y for d in nvData?[1].values)
     sensor.properties.th_times     = (d.x for d in nvData?[0].values)
     sensor.properties.env_nvData   = nvData
 
   _bind_comf_data_to_sensor: (sensor, nvData) ->
+    nvData = @_filter_nvData(nvData)
     sensor.properties.comfortabilities =
       (d.y for d in nvData?[0].values)
     sensor.properties.comf_times =
       (d.x for d in nvData?[0].values)
     sensor.properties.comf_nvData = nvData
+
+  _filter_nvData: (nvData) ->
+    isvalid = (d) -> !isNaN(d?.x) and !isNaN(d?.y)
+    filtered = __.clone nvData
+    dataset.values = dataset.values.filter isvalid for dataset in filtered
+    return filtered
 
 module.exports = DrawerBase
