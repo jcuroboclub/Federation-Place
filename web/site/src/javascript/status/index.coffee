@@ -1,2 +1,2 @@
-App = require('./app')
-App.start()
+App = require('../app')
+App.start("status")
