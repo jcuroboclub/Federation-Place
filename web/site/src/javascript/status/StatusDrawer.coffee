@@ -1,8 +1,7 @@
 # Created by AshGillman, 12/07/15
-__        = require '../helpers'
-TS        = require '../thingspeak'
-DataMgr   = require('../DataManager').DataManager
-LineChart = require('../NvWrapper').LineChart
+__         = require '../helpers'
+LineChart  = require('../NvWrapper').LineChart
+DrawerBase = require '../DrawerBase'
 
 
 # constants/magic numbers
@@ -35,18 +34,14 @@ comfort_rating_to_desc = (comf) ->
   return text + ' ' + emotify_comf comf
 
 
-StatusDrawer = class StatusDrawer
+StatusDrawer = class StatusDrawer extends DrawerBase
   constructor: (@parent, sensor_metadata, @ts_params) ->
-    @sensors = sensor_metadata.features
+    super(@parent, sensor_metadata, @ts_params)
+
     @floors = do (__.floor_of s for s in @sensors).unique
     @sensors_by_floor =
       for f in @floors
         @sensors.filter (s) -> (__.floor_of s) == f
-
-    @temp_charts   = {}
-    @hum_charts    = {}
-    @env_dataMgrs  = {}
-    @comf_dataMgrs = {}
 
     do do @redraw
 
@@ -54,7 +49,7 @@ StatusDrawer = class StatusDrawer
   redraw: ->
     context = @
     return ->
-      do context._fit_tiling
+      do context._fit_tiling # We redo this to account for window resize
       do context._draw_floor_titles
       context._bind_dataMgr_to_sensor sensor for sensor in context.sensors
 
@@ -84,52 +79,6 @@ StatusDrawer = class StatusDrawer
     sel
       .text (d) -> "Floor #{d}"
       .attr "x", (floor) => (@floors.indexOf floor) * @node_h_spacing
-
-  update_history: (@ts_params) ->
-    for sensor in @sensors
-      @_update_source sensor
-      do @env_dataMgrs[__.id_of sensor].update
-      do @comf_dataMgrs[__.id_of sensor].update
-
-  _update_source: (sensor) ->
-    @env_dataMgrs[__.id_of sensor]
-      .setSource (callback) =>
-        TS.loadFeed sensor.properties.env_channel
-        , ((d) -> callback TS.toNv d)
-        , @ts_params
-    @comf_dataMgrs[__.id_of sensor]
-      .setSource (callback) =>
-        TS.loadFeed sensor.properties.comf_channel
-        , ((d) -> callback TS.toNv d)
-        , __.omit_keys TS.AGGREGATION_PARAMS, @ts_params # aggregation not necessary
-
-  _bind_dataMgr_to_sensor: (sensor) ->
-    if !@env_dataMgrs[__.id_of sensor]
-      @env_dataMgrs[__.id_of sensor] = new DataMgr
-      @env_dataMgrs[__.id_of sensor].addSubscriber (data) =>
-          @_bind_env_data_to_sensor sensor, data
-          do @_draw_node_status
-
-    if !@comf_dataMgrs[__.id_of sensor]
-      @comf_dataMgrs[__.id_of sensor] = new DataMgr
-      @comf_dataMgrs[__.id_of sensor].addSubscriber (data) =>
-          @_bind_comf_data_to_sensor sensor, data
-          do @_draw_node_status
-
-    @_update_source sensor
-    do @env_dataMgrs[__.id_of sensor].begin
-    do @comf_dataMgrs[__.id_of sensor].begin
-
-  _bind_env_data_to_sensor: (sensor, nvData) ->
-    sensor.properties.temperatures = (d.y for d in nvData?[0].values)
-    sensor.properties.humidities   = (d.y for d in nvData?[1].values)
-    sensor.properties.th_times     = (d.x for d in nvData?[0].values)
-    sensor.properties.env_nvData   = nvData
-
-  _bind_comf_data_to_sensor: (sensor, nvData) ->
-    sensor.properties.comfortabilities = (d.y for d in nvData?[0].values)
-    sensor.properties.comf_times       = (d.x for d in nvData?[0].values)
-    sensor.properties.comf_nvData      = nvData
 
   _draw_node_status: ->
     # svg:g container for each sensor
@@ -206,6 +155,7 @@ StatusDrawer = class StatusDrawer
           .width width
           .height height
         chart.updateChart [d.properties.env_nvData?[index]]
+        console.log d.properties.env_nvData?[index]
 
   _plot_comf_hist: ->
     [width, height] = [@node_width, comfort_plot_height]
