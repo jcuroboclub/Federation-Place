@@ -1,12 +1,12 @@
 # Created by AshGillman, 19/5/15
-__ = require './helpers'
-TS = require './thingspeak'
-D3P = require './D3Plotter.coffee'
-LineChart = require('./NvWrapper').LineChart
-DataMgr = require('./DataManager').DataManager
-FloorPlan = require('./FloorPlan').FloorPlan
+__           = require './helpers'
+TS           = require './thingspeak'
+#D3P          = require './D3Plotter.coffee'
+#LineChart    = require('./NvWrapper').LineChart
+#DataMgr      = require('./DataManager').DataManager
+#FloorPlan    = require('./FloorPlan').FloorPlan
 StatusDrawer = require('./status/StatusDrawer')
-$ = require 'jquery'
+$            = require 'jquery'
 
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
@@ -23,8 +23,8 @@ App =
   display_overview: (parent) ->
     $.getJSON '../data/sensors.geojson', (sensor_metadata) ->
         histories =
-          'day': {days: 1, average: 10}
-          'week': {days: 7, average: 60}
+          'day':   {days: 1,  average: 10}
+          'week':  {days: 7,  average: 60}
           'month': {days: 31, average: 240}
         get_history = -> histories[(d3.select '#history').property 'value']
         history = do get_history

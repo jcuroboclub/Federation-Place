@@ -38,7 +38,9 @@ do -> Function::debounce ?= (threshold=100, execAsap=true) ->
 # Helper functions
 
 exports.floor_of = (sensor) -> sensor.geometry.coordinates[2]
+
 exports.id_of = (sensor) -> sensor.properties.id
+
 svg_px_size_by_style = (el, attr) ->
   size = +(el.style attr)[0..-3]
   if size then size else 0
@@ -50,14 +52,17 @@ exports.svg_px_width = (el) ->
 exports.svg_px_height = (el) ->
   size_by_style = svg_px_size_by_style el, 'height'
   if size_by_style then size_by_style else svg_px_size_by_bbox el, 'height'
+
 exports.omit_keys = (keys, obj) ->
   new_obj = {}
   new_obj[k] = v for k, v of obj when k not in keys
   return new_obj
+
 # inline debugger
 exports.addDebug = (fn) -> (d...) ->
   console.log fn, d
   fn d...
+
 # https://coffeescript-cookbook.github.io/chapters/classes_and_objects/cloning
 clone = (obj) ->
   if not obj? or typeof obj isnt 'object'

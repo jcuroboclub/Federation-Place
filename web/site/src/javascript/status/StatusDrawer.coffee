@@ -1,18 +1,18 @@
 # Created by AshGillman, 12/07/15
-__ = require '../helpers'
-TS = require '../thingspeak'
-DataMgr = require('../DataManager').DataManager
+__        = require '../helpers'
+TS        = require '../thingspeak'
+DataMgr   = require('../DataManager').DataManager
 LineChart = require('../NvWrapper').LineChart
 
 
 # constants/magic numbers
-floor_title_height = 30 # height of the floor title
-node_w_h_ratio = 2 # desired aspect ratio (width:height) of each node
-node_h_margin = 20 # horizontal margin between nodes
-node_v_margin = 40 # vertical margin between nodes
-node_internal_margin = 10 # margin inside node between elements
-comfort_plot_height = 2 * __.svg_px_size (d3.select 'body'), 'font-size'
-n_samples = 1000 # no. samples to download from ThingSpeak
+floor_title_height   = 30   # height of the floor title
+node_w_h_ratio       = 2    # desired aspect ratio (width:height) of each node
+node_h_margin        = 20   # horizontal margin between nodes
+node_v_margin        = 40   # vertical margin between nodes
+node_internal_margin = 10   # margin inside node between elements
+comfort_plot_height  = 2 * __.svg_px_size (d3.select 'body'), 'font-size'
+n_samples            = 1000 # no. samples to download from ThingSpeak
 
 
 emotify_comf = (comf) ->
@@ -34,6 +34,7 @@ comfort_rating_to_desc = (comf) ->
     return '<error>'
   return text + ' ' + emotify_comf comf
 
+
 StatusDrawer = class StatusDrawer
   constructor: (@parent, sensor_metadata, @ts_params) ->
     @sensors = sensor_metadata.features
@@ -42,9 +43,9 @@ StatusDrawer = class StatusDrawer
       for f in @floors
         @sensors.filter (s) -> (__.floor_of s) == f
 
-    @temp_charts = {}
-    @hum_charts = {}
-    @env_dataMgrs = {}
+    @temp_charts   = {}
+    @hum_charts    = {}
+    @env_dataMgrs  = {}
     @comf_dataMgrs = {}
 
     do do @redraw
@@ -66,11 +67,11 @@ StatusDrawer = class StatusDrawer
 
     # aspect ratio
     if @node_h_spacing > @node_v_spacing * node_w_h_ratio
-      @node_h_spacing = @node_v_spacing * node_w_h_ratio
+       @node_h_spacing = @node_v_spacing * node_w_h_ratio
     if @node_v_spacing > @node_h_spacing / node_w_h_ratio
-      @node_v_spacing = @node_h_spacing / node_w_h_ratio
+       @node_v_spacing = @node_h_spacing / node_w_h_ratio
 
-    @node_width = @node_h_spacing - node_h_margin
+    @node_width  = @node_h_spacing - node_h_margin
     @node_height = @node_v_spacing - node_v_margin
 
   _draw_floor_titles: ->
@@ -121,14 +122,14 @@ StatusDrawer = class StatusDrawer
 
   _bind_env_data_to_sensor: (sensor, nvData) ->
     sensor.properties.temperatures = (d.y for d in nvData?[0].values)
-    sensor.properties.humidities = (d.y for d in nvData?[1].values)
-    sensor.properties.th_times = (d.x for d in nvData?[0].values)
-    sensor.properties.env_nvData = nvData
+    sensor.properties.humidities   = (d.y for d in nvData?[1].values)
+    sensor.properties.th_times     = (d.x for d in nvData?[0].values)
+    sensor.properties.env_nvData   = nvData
 
   _bind_comf_data_to_sensor: (sensor, nvData) ->
     sensor.properties.comfortabilities = (d.y for d in nvData?[0].values)
-    sensor.properties.comf_times = (d.x for d in nvData?[0].values)
-    sensor.properties.comf_nvData = nvData
+    sensor.properties.comf_times       = (d.x for d in nvData?[0].values)
+    sensor.properties.comf_nvData      = nvData
 
   _draw_node_status: ->
     # svg:g container for each sensor
