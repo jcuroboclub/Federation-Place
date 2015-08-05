@@ -155,7 +155,6 @@ StatusDrawer = class StatusDrawer extends DrawerBase
           .width width
           .height height
         chart.updateChart [d.properties.env_nvData?[index]]
-        console.log d.properties.env_nvData?[index]
 
   _plot_comf_hist: ->
     [width, height] = [@node_width, comfort_plot_height]
