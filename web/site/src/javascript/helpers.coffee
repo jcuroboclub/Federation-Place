@@ -9,10 +9,13 @@ do -> Array::unique ?= ->
   output = {}
   output[@[key]] = @[key] for key in [0...@length]
   value for key, value of output
-do -> Array::filter ?= (callback) ->
-  element for element in this when callback element
+do -> Array::filter ?= (predicate) ->
+  element for element in this when predicate element
 do -> Array::sum ?= -> @reduce ((a, b) -> a + b), 0
 do -> Array::average ?= -> if @length then do @sum / @length else 0
+do -> Array::findIndex ?= (predicate) ->
+  return i for value, i in @ when predicate value
+  return -1
 
 
 # Function Prototype updates
