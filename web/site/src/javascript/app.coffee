@@ -42,7 +42,8 @@ App =
 
   display_scatter: (parent) ->
     $.getJSON '../data/sensors.geojson', (sensor_metadata) ->
-        disp_window = new ScatterDrawer parent, sensor_metadata
+        disp_window =
+          new ScatterDrawer parent, sensor_metadata, {average: 10, days: 9999}
       .fail ->
         console.error "couldn't load map data: /data/sensors.geojson"
 

@@ -49,9 +49,10 @@ StatusDrawer = class StatusDrawer extends DrawerBase
   redraw: ->
     context = @
     return ->
-      do context._fit_tiling # We redo this to account for window resize
+      do context._fit_tiling # redo this to account for window resize
       do context._draw_floor_titles
-      context._bind_dataMgr_to_sensor sensor for sensor in context.sensors
+      for sensor in context.sensors
+        context._bind_dataMgr_to_sensor sensor
 
   _fit_tiling: ->
     # sizing for each node

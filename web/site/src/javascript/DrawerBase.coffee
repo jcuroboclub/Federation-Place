@@ -15,7 +15,18 @@ comfort_plot_height  = 2 * __.svg_px_size (d3.select 'body')
                            , 'font-size'
 n_samples            = 1000 # no. samples to download from ThingSpeak
 
-
+###
+  Base class for drawing plots, handles the data management.
+  Extending classes must call:
+      super(svg: parent, geojson: sensor_metadata, obj: ts_params)
+      - parent: svg DOM to insert plot into.
+      - sensor_metadata: a geojson file with sensor data, see under
+        src/data for an example.
+      - ts_params: Object containing the ThingSpeak parameters for the
+        data request.
+  Extending classes must provide:
+      - _draw_node_status(): does the actual plotting.
+###
 DrawerBase = class StatusDrawer
   constructor: (@parent, sensor_metadata, @ts_params) ->
     @sensors = sensor_metadata.features

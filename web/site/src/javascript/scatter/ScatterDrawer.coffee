@@ -1,7 +1,7 @@
 # Created by AshGillman, 05/08/12
-__         = require '../helpers'
-#LineChart = require('../NvWrapper').ScatterChart
-DrawerBase = require '../DrawerBase'
+__           = require '../helpers'
+ScatterChart = require('../NvWrapper').ScatterChart
+DrawerBase   = require '../DrawerBase'
 
 ScatterDrawer = class ScatterDrawer extends DrawerBase
   constructor: (@parent, sensor_metadata, @ts_params) ->
@@ -10,6 +10,39 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
 
   # NOTE: returns a closure
   redraw: ->
-    -> console.log 'draw'
+    context = @
+    return ->
+      for sensor in context.sensors
+        context._bind_dataMgr_to_sensor sensor
+
+  _draw_node_status: ->
+    @chart ?= new ScatterChart @parent
+    @plot_data ?=
+      [{
+        key: 'Uncomfortable'
+        values: []
+      },
+      {
+        key: 'Indecisive'
+        values: []
+      },
+      {
+        key: 'Comfortable'
+        values: []
+      }]
+
+    console.log @sensors[2].properties.th_times.length, @sensors[2].properties.th_times
+    for {properties} in @sensors
+      if properties.comf_times.length > 0 and properties.th_times.length > 0
+        for comf, i in properties.comfortabilities
+          time = properties.comf_times[i]
+          th_index = properties.th_times.findIndex (d) -> d > time
+          #console.log th_index
+          if th_index >= 0
+            @plot_data[comf-1].values.push {
+              x: properties.temperatures[th_index]
+              y: properties.humidities[th_index]
+              }
+    @chart.updateChart @plot_data
 
 module.exports = ScatterDrawer
