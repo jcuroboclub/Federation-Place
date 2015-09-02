@@ -1,34 +1,37 @@
 # Created by AshGillman, 19/5/15
-require '../helpers'
-TS = require '../thingspeak'
-D3P = require '../D3Plotter.coffee'
-LineChart = require('../NvWrapper').LineChart
-DataMgr = require('../DataManager').DataManager
-FloorPlan = require('../FloorPlan').FloorPlan
-StatusDrawer = require('./StatusDrawer')
-$ = require 'jquery'
+__            = require './helpers'
+TS            = require './thingspeak'
+#D3P          = require './D3Plotter.coffee'
+#LineChart    = require('./NvWrapper').LineChart
+#DataMgr      = require('./DataManager').DataManager
+#FloorPlan    = require('./FloorPlan').FloorPlan
+StatusDrawer  = require('./status/StatusDrawer')
+ScatterDrawer = require('./scatter/ScatterDrawer')
+$             = require 'jquery'
 
 anchorId = 'vis'
 #mainAnchor = D3P.appendAnchor('body', anchorId)
 
 App =
-  start: ->
-    do App.display_overview
+  start: (arg) ->
+    task = do ->
+      return App.display_status  if arg == 'status'
+      return App.display_scatter if arg == 'scatter'
+      return App.default_task
+    svg = d3.select '#vis svg'
+      .style 'height', '80vh'
+    task svg
 
-  display_overview: ->
+  display_status: (parent) ->
     $.getJSON '../data/sensors.geojson', (sensor_metadata) ->
-        svg = d3.select '#vis svg'
-          .style 'height', '80vh'
-        parent = svg
-
         histories =
-          'day': {days: 1, average: 10}
-          'week': {days: 7, average: 60}
+          'day':   {days: 1,  average: 10}
+          'week':  {days: 7,  average: 60}
           'month': {days: 31, average: 240}
         get_history = -> histories[(d3.select '#history').property 'value']
         history = do get_history
 
-        disp_window = new StatusDrawer svg, sensor_metadata, history
+        disp_window = new StatusDrawer parent, sensor_metadata, history
         d3.select '#history'
           .on 'change', ->
             history = do get_history
@@ -37,10 +40,26 @@ App =
       .fail ->
         console.error "couldn't load map data: /data/sensors.geojson"
 
+  display_scatter: (parent) ->
+    $.getJSON '../data/sensors.geojson', (sensor_metadata) ->
+        disp_window =
+          new ScatterDrawer parent, sensor_metadata, {average: 10, days: 9999}
+      .fail ->
+        console.error "couldn't load map data: /data/sensors.geojson"
+
+  default_task: (parent) ->
+    parent.append 'text'
+      .text 'Nothing to see here'
+      .attr 'x', (__.svg_px_width parent) / 2
+      .attr 'y', (__.svg_px_height parent) / 2
+      .style 'text-anchor', 'middle'
+
+  ###
   display_floorplan: ->
     width = 512
     height = 512
-    svg = d3.select '#vis svg'
+    svg = d3.select '#vis svg
+  '
         .attr 'width', width
         .attr 'height', height
     tooltip = d3.select 'body'
@@ -88,5 +107,6 @@ App =
 
     load_map_features '/data/floor_0.geojson'
     load_map_features '/data/sensors.geojson'
+  ###
 
 module.exports = App

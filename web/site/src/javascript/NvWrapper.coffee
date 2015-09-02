@@ -1,14 +1,26 @@
 d3 = require 'd3'
 require 'nvd3/build/nv.d3.js' # as nv
 
-exports.LineChart = class LineChart
+class ChartBase
   constructor: (@target) ->
     @oldlast = 0
     @chart = do @_makeChart
 
   _makeChart: ->
+
+  # Override this
+  updateChart: (data) ->
+    @_draw(data)
+
+  _draw: (data) ->
+    (if typeof @target is 'string' then d3.select @target else @target)
+      .datum data
+      .call @chart
+
+exports.LineChart = class LineChart extends ChartBase
+  _makeChart: ->
     chart = nv.models.lineChart()
-    chart.useInteractiveGuideline?(true)
+    chart.useInteractiveGuideline? true
     chart.xAxis
       .axisLabel ''
       .tickFormat (d) ->
@@ -20,7 +32,7 @@ exports.LineChart = class LineChart
     nv.utils.windowResize(chart.update)
     return chart
 
-  updateChart: (data) =>
+  updateChart: (data) ->
     if !data?[0]
       return
     domain_in_days = do (oneDay = 24*60*60*1000) ->
@@ -31,6 +43,20 @@ exports.LineChart = class LineChart
       return '%e %b'
     @chart.xAxis.tickFormat (d) -> (d3.time.format format) new Date d
     #@chart.yAxis.axisLabel data[0].key
-    (if typeof @target is 'string' then d3.select(@target) else @target)
-      .datum data
-      .call @chart
+    @_draw(data)
+
+exports.ScatterChart = class ScatterChart extends ChartBase
+  _makeChart: ->
+    chart = nv.models.scatterChart()
+    chart
+      .useInteractiveGuideline? true
+      .color d3.scale.category10().range()
+    chart.xAxis.tickFormat d3.format '.2f'
+    chart.yAxis.tickFormat d3.format '.2f'
+    nv.utils.windowResize(chart.update)
+    return chart
+
+  updateChart: (data) ->
+    if !data?[0]
+      return
+    @_draw(data)

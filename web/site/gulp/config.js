@@ -62,6 +62,13 @@ module.exports = {
             outputName: 'status/index.js',
             extensions: ['.coffee'],
             require: ['jquery', 'underscore', 'd3', 'nvd3/build/nv.d3.js']
+        },
+        {
+            entries: src + '/javascript/scatter/index.coffee',
+            dest: dest,
+            outputName: 'scatter/index.js',
+            extensions: ['.coffee'],
+            require: ['jquery', 'underscore', 'd3', 'nvd3/build/nv.d3.js']
         }]
     },
     production: {
