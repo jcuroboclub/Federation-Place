@@ -22,7 +22,10 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
 
   _draw_node_status: ->
     @chart ?= new ScatterChart @parent
-    @plot_data =
+    @chart.chart.xAxis.axisLabel 'Temperature (℃)'
+    @chart.chart.yAxis.axisLabel 'Humidity (%)'
+
+    plot_data =
       [{
         key: 'Uncomfortable'
         values: []
@@ -41,12 +44,13 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
         for comf, i in properties.comfortabilities
           time = properties.comf_times[i]
           th_index = properties.th_times.findIndex (d) -> d > time
-          #console.log th_index
           if th_index >= 0
-            @plot_data[comf-1].values.push {
+            plot_data[comf-1].values.push {
               x: properties.temperatures[th_index]
               y: properties.humidities[th_index]
               }
-    @chart.updateChart @plot_data
+    do plot_data.reverse
+    #console.log plot_data.map((x) -> x.values.length)
+    @chart.updateChart plot_data
 
 module.exports = ScatterDrawer
