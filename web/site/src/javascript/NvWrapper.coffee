@@ -51,6 +51,8 @@ exports.ScatterChart = class ScatterChart extends ChartBase
     chart
       .useInteractiveGuideline? true
       .color d3.scale.category10().range()
+    chart.xAxis.tickFormat d3.format '.2f'
+    chart.yAxis.tickFormat d3.format '.2f'
     nv.utils.windowResize(chart.update)
     return chart
 
