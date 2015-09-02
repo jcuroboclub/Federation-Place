@@ -27,6 +27,11 @@ The gulp configurations are contained within `./gulp/`.
 The tasks themselves are located within `./gulp/tasks/`, and contain the specific code to complete various build tasks, such as converting CoffeeScript to JavaScript, bundling the files together, and moving them to `./build`.
 Other tasks are in charge of running tests, code checks (linting), sass->css, and uglifying.
 
+#### Quickstart commands
+Whilst in the `site` directory, run `gulp` to start a web server. Navigate to
+`http://localhost:3000` to view your site. When you are happy with the work, use
+`gulp deploy` to upload the live site to GitHub Pages.
+
 ### CoffeeScript and Browserify
 The code is written in CoffeeScript, which compiles to JavaScript but makes easy some of JavaScript's ugly idioms.
 Browserify allows you to `require` code, meaning you can easily separate the code out and modularise it.
