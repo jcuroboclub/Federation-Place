@@ -17,7 +17,7 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
 
   _draw_node_status: ->
     @chart ?= new ScatterChart @parent
-    @plot_data ?=
+    @plot_data =
       [{
         key: 'Uncomfortable'
         values: []
@@ -31,7 +31,6 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
         values: []
       }]
 
-    console.log @sensors[2].properties.th_times.length, @sensors[2].properties.th_times
     for {properties} in @sensors
       if properties.comf_times.length > 0 and properties.th_times.length > 0
         for comf, i in properties.comfortabilities
