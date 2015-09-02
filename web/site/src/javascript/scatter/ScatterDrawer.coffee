@@ -14,6 +14,7 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
     @chart ?= new ScatterChart @parent
     @chart.chart.xAxis.axisLabel 'Temperature (℃)'
     @chart.chart.yAxis.axisLabel 'Humidity (%)'
+    @chart.chart.margin {left: 70, right: 20, top: 20, bottom: 70}
 
     do do @redraw
 
