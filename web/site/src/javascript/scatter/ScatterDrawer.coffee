@@ -11,6 +11,10 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
     @parent.style 'height', size
     @parent.style 'width', size
 
+    @chart ?= new ScatterChart @parent
+    @chart.chart.xAxis.axisLabel 'Temperature (℃)'
+    @chart.chart.yAxis.axisLabel 'Humidity (%)'
+
     do do @redraw
 
   # NOTE: returns a closure
@@ -21,9 +25,6 @@ ScatterDrawer = class ScatterDrawer extends DrawerBase
         context._bind_dataMgr_to_sensor sensor
 
   _draw_node_status: ->
-    @chart ?= new ScatterChart @parent
-    @chart.chart.xAxis.axisLabel 'Temperature (℃)'
-    @chart.chart.yAxis.axisLabel 'Humidity (%)'
 
     plot_data =
       [{
