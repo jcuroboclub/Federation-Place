@@ -6,6 +6,11 @@ DrawerBase   = require '../DrawerBase'
 ScatterDrawer = class ScatterDrawer extends DrawerBase
   constructor: (@parent, sensor_metadata, @ts_params) ->
     super(@parent, sensor_metadata, @ts_params)
+
+    size = Math.min (__.svg_px_width @parent), (__.svg_px_height @parent)
+    @parent.style 'height', size
+    @parent.style 'width', size
+
     do do @redraw
 
   # NOTE: returns a closure
